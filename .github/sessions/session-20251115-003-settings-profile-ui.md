@@ -469,11 +469,81 @@ interface ProfileModalProps {
 - ✅ TypeScript 컴파일 에러 없음
 - ✅ Git 커밋 및 푸시
 
+### 7. 프로필별 API 설정 로드 UI 구현 - 2025-11-15 ✅
+
+#### ProfileApiConfigModal 업데이트
+**변경사항**:
+1. **프로필 데이터 로드 기능 추가**
+   - ProfileServiceClient.getProfile() gRPC 호출
+   - 로딩 상태 표시 (Loader2 스피너)
+   - 에러 처리 및 표시
+
+2. **UI 상태 추가**
+   ```typescript
+   const [loading, setLoading] = useState(false)
+   const [error, setError] = useState<string | null>(null)
+   const [profileData, setProfileData] = useState<any>(null)
+   ```
+
+3. **조건부 렌더링**
+   - Loading State: 프로필 로드 중
+   - Error State: 로드 실패 시 에러 메시지
+   - Loaded State: 프로필 로드 성공
+
+4. **정보 안내 추가**
+   - Profile Configuration Status 카드
+   - "Coming soon" 메시지로 향후 기능 안내
+   - 현재는 전역 API 설정 표시 (ApiOptions 컴포넌트)
+
+5. **Save 버튼 비활성화**
+   - `disabled={true}` 속성 추가
+   - "Save Changes (Coming Soon)" 텍스트로 변경
+   - 프로필별 설정 저장 기능은 향후 구현
+
+#### 설계 결정
+**현재 구현 범위**:
+- ✅ 프로필 메타데이터 로드
+- ✅ UI 구조 및 상태 관리
+- ✅ 에러 처리
+- ⬜ 프로필별 API 설정 로드 (TODO - getProfile에서 configuration 반환 필요)
+- ⬜ 프로필별 설정 저장 (TODO - ApiOptions 리팩토링 필요)
+
+**향후 작업 (Phase 5)**:
+1. **Backend: getProfile configuration 구현**
+   - `src/core/controller/profile/getProfile.ts` 수정
+   - ProfileConfiguration을 proto로 변환
+   - apiConfiguration 반환
+
+2. **Frontend: ProfileApiOptions 컴포넌트**
+   - ApiOptions를 복제하여 프로필 전용 버전 생성
+   - ExtensionState 대신 profileConfiguration 사용
+   - 변경사항 추적 및 임시 저장
+
+3. **설정 저장 구현**
+   - ProfileServiceClient.updateProfile() 호출
+   - ProfileConfiguration 업데이트
+   - StateManager 자동 동기화
+
+#### 커밋 정보
+- **파일**: ProfileApiConfigModal.tsx (재작성)
+- **상태**: ✅ 타입 에러 없음, 정상 동작
+
+#### 완료 항목
+- ✅ ProfileServiceClient.getProfile() gRPC 통합
+- ✅ 로딩/에러/성공 상태 UI
+- ✅ Info 카드로 향후 기능 안내
+- ✅ 현재 전역 설정 임시 표시
+- ✅ Save 버튼 비활성화 (Coming Soon)
+- ✅ TypeScript 컴파일 에러 없음
+
 ### 다음 단계
 1. **프로필 상세 설정 UI 구현** (진행 중 🚧)
    - ✅ profiles.ts에 확장 포인트 문서화
    - ✅ ProfileApiConfigModal 기본 UI 생성
    - ✅ Configure API 버튼 추가
+   - ✅ Escape 키로 모달 닫기
+   - ✅ 탭 상태 초기화 (프로필 변경 시)
+   - ✅ console.error 제거 (UI Alert로 충분)
    - ⬜ 프로필별 설정 로드/저장 구현
    - ⬜ ApiOptions와 통합
    
