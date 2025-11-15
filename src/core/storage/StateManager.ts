@@ -131,15 +131,31 @@ export class StateManager {
 					const activeProfileId = StateManager.instance.profileManager.getActiveProfileId()
 					if (activeProfileId) {
 						const profile = StateManager.instance.profileManager.getProfile(activeProfileId)
-						console.log("[Profile] Active profile:", {
-							id: profile?.metadata.id,
-							name: profile?.metadata.name,
-							planMode: profile?.configuration.planMode,
-						})
-						console.log(
-							"[Profile] Active profile planMode details:",
-							JSON.stringify(profile?.configuration.planMode, null, 2),
-						)
+
+						if (!profile) {
+							// ⚠️ 활성 프로필 ID는 있는데 프로필이 없는 경우
+							console.warn(`⚠️ [Profile] WARNING: Active profile ${activeProfileId} not found!`)
+							const profiles = StateManager.instance.profileManager.getAllProfiles()
+							if (profiles.length > 0) {
+								const firstProfile = profiles[0]
+								console.warn(
+									`⚠️ [Profile] Auto-activating first available profile: ${firstProfile.metadata.name} (${firstProfile.metadata.id})`,
+								)
+								StateManager.instance.profileManager.switchProfile(firstProfile.metadata.id)
+							} else {
+								console.error("⚠️ [Profile] ERROR: No profiles available!")
+							}
+						} else {
+							console.log("[Profile] Active profile:", {
+								id: profile.metadata.id,
+								name: profile.metadata.name,
+								planMode: profile.configuration.planMode,
+							})
+							console.log(
+								"[Profile] Active profile planMode details:",
+								JSON.stringify(profile.configuration.planMode, null, 2),
+							)
+						}
 					} else {
 						// ⚠️ 활성 프로필이 없는 경우 - 첫 번째 프로필 자동 활성화
 						console.warn("⚠️ [Profile] WARNING: No active profile found!")
