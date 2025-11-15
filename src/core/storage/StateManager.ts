@@ -135,6 +135,10 @@ export class StateManager {
 							name: profile?.metadata.name,
 							planMode: profile?.configuration.planMode,
 						})
+						console.log(
+							"[StateManager] Active profile planMode details:",
+							JSON.stringify(profile?.configuration.planMode, null, 2),
+						)
 					} else {
 						console.warn("[StateManager] No active profile found!")
 					}
