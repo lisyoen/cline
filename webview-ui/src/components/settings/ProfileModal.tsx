@@ -30,6 +30,15 @@ export function ProfileModal({ open, mode, profileName = "", profileDescription 
 			setName(profileName)
 			setDescription(profileDescription)
 			setNameError("")
+
+			// Focus and select text after a short delay to ensure DOM is ready
+			setTimeout(() => {
+				const input = document.getElementById("profile-name") as HTMLInputElement
+				if (input) {
+					input.focus()
+					input.select()
+				}
+			}, 100)
 		}
 	}, [open, profileName, profileDescription])
 
@@ -88,7 +97,6 @@ export function ProfileModal({ open, mode, profileName = "", profileDescription 
 							Profile Name <span className="text-(--vscode-errorForeground)">*</span>
 						</label>
 						<VSCodeTextField
-							autoFocus
 							id="profile-name"
 							onInput={(e: any) => {
 								const value = e.target.value

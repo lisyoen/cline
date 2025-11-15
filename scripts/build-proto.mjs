@@ -28,6 +28,7 @@ const TS_PROTO_PLUGIN = isWindows
 const TS_PROTO_OPTIONS = [
 	"env=node",
 	"esModuleInterop=true",
+	"importSuffix=.js", // Add .js suffix to imports for ESM compatibility
 	"outputServices=generic-definitions", // output generic ServiceDefinitions
 	"outputIndex=true", // output an index file for each package which exports all protos in the package.
 	"useOptionals=none", // scalar and message fields are required unless they are marked as optional.

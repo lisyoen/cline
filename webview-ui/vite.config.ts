@@ -39,6 +39,9 @@ console.log("Building webview for", platform)
 
 export default defineConfig({
 	plugins: [react(), tailwindcss(), writePortToFile()],
+	optimizeDeps: {
+		include: ["@shared/proto/cline/profile"],
+	},
 	test: {
 		environment: "jsdom",
 		globals: true,

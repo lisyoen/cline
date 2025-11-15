@@ -28,12 +28,17 @@ export async function main() {
 
 async function generateWebviewProtobusClients(protobusServices) {
 	const clients = []
+	const usedTypes = new Set()
 
 	for (const [serviceName, def] of Object.entries(protobusServices)) {
 		const rpcs = []
 		for (const [rpcName, rpc] of Object.entries(def.service)) {
 			const requestType = getFqn(rpc.requestType.type.name)
 			const responseType = getFqn(rpc.responseType.type.name)
+
+			// Collect used types
+			usedTypes.add(requestType)
+			usedTypes.add(responseType)
 
 			if (rpc.requestStream) {
 				throw new Error("Request streaming is not supported")
