@@ -559,6 +559,56 @@ export class ProfileManager {
 	}
 
 	/**
+	 * 중복된 Default 프로필 정리 (디버깅/마이그레이션 문제 해결용)
+	 * 가장 최근 것 하나만 남기고 나머지 삭제
+	 */
+	public cleanupDuplicateDefaultProfiles(): void {
+		const profiles = this.getAllProfiles()
+		const defaultProfiles = profiles.filter((p) => p.metadata.name === "Default")
+
+		if (defaultProfiles.length <= 1) {
+			console.log("[Profile] No duplicate Default profiles found")
+			return
+		}
+
+		console.log(`[Profile] Found ${defaultProfiles.length} Default profiles, cleaning up...`)
+
+		// 가장 최근 것 찾기 (updatedAt 기준)
+		const sortedByDate = [...defaultProfiles].sort(
+			(a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
+		)
+		const keepProfile = sortedByDate[0]
+		const deleteProfiles = sortedByDate.slice(1)
+
+		console.log(`[Profile] Keeping profile: ${keepProfile.metadata.id}`)
+		console.log(`[Profile] Deleting ${deleteProfiles.length} duplicate profiles`)
+
+		// 상태 가져오기
+		const state = this.getProfileSystemState()
+		if (!state) {
+			return
+		}
+
+		// 중복 프로필들 제거 (isDefault 체크 우회)
+		for (const profile of deleteProfiles) {
+			console.log(`[Profile] Removing duplicate: ${profile.metadata.id}`)
+			state.profiles = state.profiles.filter((p) => p.metadata.id !== profile.metadata.id)
+			this.cache.delete(profile.metadata.id)
+		}
+
+		// keepProfile이 isDefault = true인지 확인
+		const keepIndex = state.profiles.findIndex((p) => p.metadata.id === keepProfile.metadata.id)
+		if (keepIndex >= 0) {
+			state.profiles[keepIndex].metadata.isDefault = true
+		}
+
+		// 저장
+		this.saveProfileSystemState(state)
+
+		console.log("[Profile] Cleanup completed successfully")
+	}
+
+	/**
 	 * Mode별 설정 추출 (planMode* 또는 actMode*)
 	 */
 	private extractModeConfiguration(apiConfig: any, mode: "planMode" | "actMode"): any {
