@@ -137,11 +137,13 @@ export class StateManager {
 							console.warn(`⚠️ [Profile] WARNING: Active profile ${activeProfileId} not found!`)
 							const profiles = StateManager.instance.profileManager.getAllProfiles()
 							if (profiles.length > 0) {
-								const firstProfile = profiles[0]
+								// isDefault 프로필 우선, 없으면 첫 번째
+								const defaultProfile = profiles.find((p) => p.metadata.isDefault)
+								const targetProfile = defaultProfile || profiles[0]
 								console.warn(
-									`⚠️ [Profile] Auto-activating first available profile: ${firstProfile.metadata.name} (${firstProfile.metadata.id})`,
+									`⚠️ [Profile] Auto-activating ${defaultProfile ? "default" : "first"} profile: ${targetProfile.metadata.name} (${targetProfile.metadata.id})`,
 								)
-								StateManager.instance.profileManager.switchProfile(firstProfile.metadata.id)
+								StateManager.instance.profileManager.switchProfile(targetProfile.metadata.id)
 							} else {
 								console.error("⚠️ [Profile] ERROR: No profiles available!")
 							}
@@ -157,15 +159,17 @@ export class StateManager {
 							)
 						}
 					} else {
-						// ⚠️ 활성 프로필이 없는 경우 - 첫 번째 프로필 자동 활성화
+						// ⚠️ 활성 프로필이 없는 경우
 						console.warn("⚠️ [Profile] WARNING: No active profile found!")
 						const profiles = StateManager.instance.profileManager.getAllProfiles()
 						if (profiles.length > 0) {
-							const firstProfile = profiles[0]
+							// isDefault 프로필 우선, 없으면 첫 번째
+							const defaultProfile = profiles.find((p) => p.metadata.isDefault)
+							const targetProfile = defaultProfile || profiles[0]
 							console.warn(
-								`⚠️ [Profile] Auto-activating first profile: ${firstProfile.metadata.name} (${firstProfile.metadata.id})`,
+								`⚠️ [Profile] Auto-activating ${defaultProfile ? "default" : "first"} profile: ${targetProfile.metadata.name} (${targetProfile.metadata.id})`,
 							)
-							StateManager.instance.profileManager.switchProfile(firstProfile.metadata.id)
+							StateManager.instance.profileManager.switchProfile(targetProfile.metadata.id)
 						} else {
 							console.error("⚠️ [Profile] ERROR: No profiles available!")
 						}
