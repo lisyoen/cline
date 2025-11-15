@@ -369,29 +369,120 @@ interface ProfileModalProps {
 - ✅ Git 커밋 및 푸시
 
 #### 미완료 항목 (다음 단계)
-- ⬜ Import/Export/Duplicate 기능 구현
-- ⬜ **프로필 상세 설정 UI** (40+ Provider)
-  - API Provider 선택 드롭다운
-  - Provider별 동적 폼 필드
-  - Plan/Act Mode 별도 설정
-  - ApiOptions 컴포넌트 재사용
+- ⬜ **프로필별 API 설정 로드/저장** (다음 작업!)
+  - ProfileServiceClient.getProfile() 호출하여 설정 로드
+  - ApiOptions 컴포넌트와 통합
+  - 설정 변경 시 프로필에 저장
+- ⬜ Import/Export/Duplicate 기능
+
+### 6. ProfileApiConfigModal 기본 UI 구현 - 2025-11-15 ✅
+
+#### profiles.ts 확장 포인트 문서화
+**위치**: `src/shared/profiles.ts`
+
+**추가된 TODO 주석**:
+프로필을 완전한 독립 환경으로 만들기 위한 확장 가능한 설정들을 문서화:
+- 자동화 설정 (autoApproval, strictPlanMode, yoloMode)
+- 브라우저 설정 (browser, remoteBrowserHost)
+- 터미널 설정 (shellIntegrationTimeout, terminalReuse 등)
+- 프롬프트 설정 (customPrompt, preferredLanguage)
+- 에이전트 설정 (maxConsecutiveMistakes, subagents 등)
+- 기능 토글 (mcpDisplayMode, checkpoints 등)
+- UI/UX 설정 (favoritedModelIds 등)
+- Focus Chain & Dictation
+
+**구현 가이드 포함**:
+1. 인터페이스에 필드 추가
+2. ProfileManager 변환 로직
+3. Settings UI 컴포넌트 추가
+4. 마이그레이션 로직 업데이트
+
+#### ProfileApiConfigModal 컴포넌트 생성
+**위치**: `webview-ui/src/components/settings/ProfileApiConfigModal.tsx`
+
+**주요 기능**:
+1. **풀스크린 모달** - 넓은 공간으로 모든 API 설정 표시
+2. **Plan/Act Mode 탭** - Plan과 Act 각각 다른 Provider/모델 설정 가능
+3. **ApiOptions 재사용** - 기존 API 설정 UI 컴포넌트 통합
+4. **정보 안내** - 프로필별 설정 범위 설명
+
+**UI 구조**:
+```tsx
+<Modal>
+  <Header>
+    - 제목: "Configure API Settings"
+    - 프로필 이름 표시
+    - Close 버튼
+  </Header>
+  
+  <Content>
+    - Plan/Act Mode 탭
+    - ApiOptions 컴포넌트
+    - 설명 메시지
+  </Content>
+  
+  <Footer>
+    - Cancel 버튼
+    - Save Changes 버튼
+  </Footer>
+</Modal>
+```
+
+**TODO**:
+- [ ] 프로필별 설정 로드 (ProfileServiceClient.getProfile)
+- [ ] ApiOptions에 프로필 설정 전달
+- [ ] 설정 변경 추적 (hasChanges)
+- [ ] 저장 시 ProfileManager.updateProfile 호출
+- [ ] 변경사항 있을 때 닫기 확인 모달
+
+#### ProfilesSection 통합
+**변경사항**:
+1. **Configure API 버튼 추가** - 각 프로필 카드에 표시
+2. **API 설정 모달 상태 추가**
+   ```typescript
+   const [apiConfigModalOpen, setApiConfigModalOpen] = useState(false)
+   const [configuringProfile, setConfiguringProfile] = useState<{ id: string; name: string } | null>(null)
+   ```
+3. **핸들러 구현**
+   - `handleConfigureApi(profile)`: 모달 열기
+   - `handleSaveApiConfig()`: 저장 (TODO)
+4. **UI 개선**
+   - Configure API 버튼 (secondary)
+   - Activate 버튼 (primary, 비활성 프로필만)
+   - flex-1로 버튼 균등 분할
+
+#### 커밋 정보
+- **커밋 해시**: 470320d4
+- **메시지**: "feat: ProfileApiConfigModal 기본 UI 구현 및 Configure API 버튼 추가"
+- **변경 파일**:
+  - ProfileApiConfigModal.tsx (신규, 116 lines)
+  - ProfilesSection.tsx (수정)
+  - profiles.ts (TODO 주석 추가)
+- **상태**: ✅ GitHub에 푸시 완료
+
+#### 완료 항목
+- ✅ profiles.ts에 확장 포인트 문서화
+- ✅ ProfileApiConfigModal 기본 UI 구현
+- ✅ Plan/Act Mode 탭 구현
+- ✅ ProfilesSection에 Configure API 버튼 추가
+- ✅ 모달 상태 관리
+- ✅ TypeScript 컴파일 에러 없음
+- ✅ Git 커밋 및 푸시
 
 ### 다음 단계
-1. **프로필 CRUD gRPC 연동** (우선순위: 높음)
-   - handleSaveProfile에서 ProfileManager.createProfile/updateProfile 호출
-   - 성공 시 UI 업데이트
-   - 에러 처리
+1. **프로필 상세 설정 UI 구현** (진행 중 🚧)
+   - ✅ profiles.ts에 확장 포인트 문서화
+   - ✅ ProfileApiConfigModal 기본 UI 생성
+   - ✅ Configure API 버튼 추가
+   - ⬜ 프로필별 설정 로드/저장 구현
+   - ⬜ ApiOptions와 통합
+   
+2. **Import/Export/Duplicate 기능** (우선순위: 중간)
+   - Export: 프로필을 JSON으로 내보내기
+   - Import: JSON에서 프로필 가져오기
+   - Duplicate: 프로필 복제
 
-2. **프로필 삭제 기능** (우선순위: 높음)
-   - 삭제 확인 AlertDialog 구현
-   - Delete 아이콘 버튼 연결
-   - ProfileManager.deleteProfile() 호출
-
-3. **프로필 상세 설정 UI** (우선순위: 최우선, 복잡도: 높음)
-   - API Provider 선택 드롭다운
-   - Provider별 동적 폼 필드
-   - Plan/Act Mode 별도 설정
-   - ApiOptions 컴포넌트 재사용
+3. **최종 테스트 및 검증**
 
 **테스트 방법**:
 1. F5 또는 Run → Start Debugging

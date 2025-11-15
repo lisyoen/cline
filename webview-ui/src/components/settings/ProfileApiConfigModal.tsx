@@ -1,7 +1,7 @@
 import { Mode } from "@shared/storage/types"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { X } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { TabButton } from "../mcp/configuration/McpConfigurationView"
 import ApiOptions from "./ApiOptions"
 
@@ -26,6 +26,29 @@ export function ProfileApiConfigModal({ open, profileId, profileName, onOpenChan
 	// TODO: 변경사항 추적 및 profileId로 설정 로드 구현
 	const _profileId = profileId
 	const [_hasChanges, _setHasChanges] = useState(false)
+
+	// Escape 키로 모달 닫기
+	useEffect(() => {
+		if (!open) {
+			return
+		}
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				handleClose()
+			}
+		}
+
+		document.addEventListener("keydown", handleKeyDown)
+		return () => document.removeEventListener("keydown", handleKeyDown)
+	}, [open])
+
+	// 프로필 변경 시 탭 상태 초기화
+	useEffect(() => {
+		if (open) {
+			setCurrentTab("plan")
+		}
+	}, [open, profileId])
 
 	if (!open) {
 		return null
