@@ -457,29 +457,37 @@ export class StateManager {
 	 * Ensures cache is initialized if not already done
 	 *
 	 * ⭐ Profile System Integration:
+	 * - 이 메서드는 **API 호출 전용**입니다 (읽기 전용)
 	 * - 프로필 시스템이 활성화된 경우, 활성 프로필의 설정 사용
 	 * - 프로필 시스템이 비활성화되거나 프로필이 없으면 레거시 설정 사용
+	 * - ⚠️ 주의: 이 메서드로 반환된 설정은 다시 저장하면 안 됩니다!
+	 *   (프로필 설정을 레거시 저장소에 덮어쓰게 됨)
 	 */
 	getApiConfiguration(): ApiConfiguration {
 		if (!this.isInitialized) {
 			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
 		}
 
-		// Check if profile system is active
-		const profileManager = ProfileManager.get()
-		const mode = this.getGlobalSettingsKey("mode") || "plan"
-		const usePlanMode = mode === "plan"
+		// ⚠️ TEMPORARY DISABLED: Profile system integration
+		// 문제: getApiConfiguration()으로 가져온 프로필 설정이
+		//       setApiConfiguration()으로 다시 저장되면서 레거시 설정을 덮어씀
+		// 해결 필요: API 호출용과 UI 표시용 분리 필요
 
-		try {
-			// Try to get configuration from active profile
-			const profileConfig = profileManager.getActiveProfileAsApiConfiguration(usePlanMode)
-			if (profileConfig) {
-				return profileConfig
-			}
-		} catch (error) {
-			// Profile system not available or failed, fall back to legacy
-			console.log("Profile system not available, using legacy API configuration:", error)
-		}
+		// Check if profile system is active
+		// const profileManager = ProfileManager.get()
+		// const mode = this.getGlobalSettingsKey("mode") || "plan"
+		// const usePlanMode = mode === "plan"
+
+		// try {
+		// 	// Try to get configuration from active profile
+		// 	const profileConfig = profileManager.getActiveProfileAsApiConfiguration(usePlanMode)
+		// 	if (profileConfig) {
+		// 		return profileConfig
+		// 	}
+		// } catch (error) {
+		// 	// Profile system not available or failed, fall back to legacy
+		// 	console.log("Profile system not available, using legacy API configuration:", error)
+		// }
 
 		// Fallback: Construct API configuration from cached component keys (legacy)
 		return this.constructApiConfigurationFromCache()
