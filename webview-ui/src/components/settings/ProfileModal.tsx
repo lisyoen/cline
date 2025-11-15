@@ -1,5 +1,5 @@
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -24,10 +24,20 @@ export function ProfileModal({ open, mode, profileName = "", profileDescription 
 	const [description, setDescription] = useState(profileDescription)
 	const [nameError, setNameError] = useState("")
 
-	const handleOpenChange = (newOpen: boolean) => {
-		if (!newOpen) {
+	// Props 변경 시 state 업데이트 (Edit 모드에서 프로필 데이터 로드)
+	useEffect(() => {
+		if (open) {
 			setName(profileName)
 			setDescription(profileDescription)
+			setNameError("")
+		}
+	}, [open, profileName, profileDescription])
+
+	const handleOpenChange = (newOpen: boolean) => {
+		if (!newOpen) {
+			// 모달 닫힐 때 state 초기화
+			setName("")
+			setDescription("")
 			setNameError("")
 		}
 		onOpenChange(newOpen)
@@ -62,9 +72,8 @@ export function ProfileModal({ open, mode, profileName = "", profileDescription 
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault()
 			handleSave()
-		} else if (e.key === "Escape") {
-			handleOpenChange(false)
 		}
+		// Escape는 AlertDialog가 자동으로 처리
 	}
 
 	return (

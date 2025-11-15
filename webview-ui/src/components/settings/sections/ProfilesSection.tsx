@@ -52,19 +52,15 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	}
 
 	// 프로필 시스템이 비활성화된 경우
-	if (!profileSystemActive || !profiles || profiles.length === 0) {
+	if (!profileSystemActive) {
 		return (
 			<div>
 				{renderSectionHeader?.("profiles")}
 				<Section>
 					<div className="flex flex-col items-center justify-center py-10 text-center">
 						<Settings2 className="w-12 h-12 mb-4 opacity-50" />
-						<h3 className="text-lg mb-2">No Profiles Available</h3>
-						<p className="text-sm opacity-70 mb-4">Profile system is not active or no profiles exist.</p>
-						<VSCodeButton onClick={handleCreateProfile}>
-							<Plus className="w-4 h-4 mr-2" />
-							Create First Profile
-						</VSCodeButton>
+						<h3 className="text-lg mb-2">Profile System Disabled</h3>
+						<p className="text-sm opacity-70 mb-4">Profile system is not active.</p>
 					</div>
 				</Section>
 			</div>
@@ -91,7 +87,7 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 
 				{/* 프로필 목록 */}
 				<div className="flex flex-col gap-2">
-					{profiles.map((profile) => {
+					{profiles?.map((profile) => {
 						const isActive = profile.id === activeProfileId
 						const isSelected = profile.id === selectedProfileId
 
