@@ -105,42 +105,42 @@ export class StateManager {
 				const migrationCompleted = StateManager.instance.globalStateCache["profileMigrationCompleted"]
 				if (!migrationCompleted) {
 					try {
-						console.log("[StateManager] Starting profile system migration...")
+						console.log("[Profile] Starting profile system migration...")
 						const currentApiConfig = StateManager.instance.constructApiConfigurationFromCache()
-						console.log("[StateManager] Current API config keys:", Object.keys(currentApiConfig))
-						console.log("[StateManager] planModeApiProvider:", currentApiConfig.planModeApiProvider)
-						console.log("[StateManager] planModeOllamaModelId:", (currentApiConfig as any).planModeOllamaModelId)
+						console.log("[Profile] Current API config keys:", Object.keys(currentApiConfig))
+						console.log("[Profile] planModeApiProvider:", currentApiConfig.planModeApiProvider)
+						console.log("[Profile] planModeOllamaModelId:", (currentApiConfig as any).planModeOllamaModelId)
 
 						const migratedProfile =
 							await StateManager.instance.profileManager.migrateFromLegacyConfig(currentApiConfig)
-						console.log("[StateManager] Migrated profile:", {
+						console.log("[Profile] Migrated profile:", {
 							id: migratedProfile.metadata.id,
 							name: migratedProfile.metadata.name,
 							planMode: migratedProfile.configuration.planMode,
 						})
 
 						StateManager.instance.setGlobalState("profileMigrationCompleted", true)
-						console.log("[StateManager] Profile system migration completed successfully")
+						console.log("[Profile] Profile system migration completed successfully")
 					} catch (error) {
-						console.error("[StateManager] Profile system migration failed:", error)
+						console.error("[Profile] Profile system migration failed:", error)
 						// 마이그레이션 실패 시에도 계속 진행 (기존 방식으로 동작)
 					}
 				} else {
-					console.log("[StateManager] Profile migration already completed, checking active profile...")
+					console.log("[Profile] Profile migration already completed, checking active profile...")
 					const activeProfileId = StateManager.instance.profileManager.getActiveProfileId()
 					if (activeProfileId) {
 						const profile = StateManager.instance.profileManager.getProfile(activeProfileId)
-						console.log("[StateManager] Active profile:", {
+						console.log("[Profile] Active profile:", {
 							id: profile?.metadata.id,
 							name: profile?.metadata.name,
 							planMode: profile?.configuration.planMode,
 						})
 						console.log(
-							"[StateManager] Active profile planMode details:",
+							"[Profile] Active profile planMode details:",
 							JSON.stringify(profile?.configuration.planMode, null, 2),
 						)
 					} else {
-						console.warn("[StateManager] No active profile found!")
+						console.warn("[Profile] No active profile found!")
 					}
 				}
 			}
@@ -534,30 +534,30 @@ export class StateManager {
 			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
 		}
 
-		console.log("[StateManager] getApiConfigurationForTask called")
+		console.log("[Profile] getApiConfigurationForTask called")
 
 		// Check if profile system is active
 		const profileManager = ProfileManager.get()
 		const mode = this.getGlobalSettingsKey("mode") || "plan"
 		const usePlanMode = mode === "plan"
 
-		console.log(`[StateManager] mode=${mode}, usePlanMode=${usePlanMode}`)
+		console.log(`[Profile] mode=${mode}, usePlanMode=${usePlanMode}`)
 
 		try {
 			// Try to get configuration from active profile
 			const profileConfig = profileManager.getActiveProfileAsApiConfiguration(usePlanMode)
 			if (profileConfig) {
-				console.log(`[StateManager] Using profile configuration for Task (mode: ${mode})`)
+				console.log(`[Profile] Using profile configuration for Task (mode: ${mode})`)
 				return profileConfig
 			}
-			console.log("[StateManager] No profile configuration, falling back to legacy")
+			console.log("[Profile] No profile configuration, falling back to legacy")
 		} catch (error) {
 			// Profile system not available or failed, fall back to legacy
-			console.log("[StateManager] Profile system error, using legacy API configuration:", error)
+			console.log("[Profile] Profile system error, using legacy API configuration:", error)
 		}
 
 		// Fallback: Construct API configuration from cached component keys (legacy)
-		console.log("[StateManager] Using legacy API configuration")
+		console.log("[Profile] Using legacy API configuration")
 		return this.constructApiConfigurationFromCache()
 	} /**
 	 * Convenience method for setting API configuration

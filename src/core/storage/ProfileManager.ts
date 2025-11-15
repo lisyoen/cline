@@ -560,7 +560,7 @@ export class ProfileManager {
 				// planModeOllamaModelId -> ollamaModelId
 				const fieldName = key.replace(prefix, "").replace(/^./, (c) => c.toLowerCase())
 				config[fieldName] = value
-				console.log(`[ProfileManager] Migration: ${key} -> ${mode}.${fieldName} = ${value}`)
+				console.log(`[Profile] Migration: ${key} -> ${mode}.${fieldName} = ${value}`)
 			}
 		}
 
