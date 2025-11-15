@@ -109,54 +109,54 @@ export class StateManager {
 
 				if (!migrationCompleted || forceMigration) {
 					try {
-						console.log("[Profile] Starting profile system migration...")
-						console.log("[Profile] forceMigration:", forceMigration)
+						console.log("[Profile:Migration] Starting profile system migration...")
+						console.log("[Profile:Migration] forceMigration:", forceMigration)
 
 						// 캐시 직접 확인 (우선순위: remoteConfig > taskState > globalState)
-						console.log("[Profile] === Cache Sources (Priority Order) ===")
+						console.log("[Profile:Migration] === Cache Sources (Priority Order) ===")
 						console.log(
-							"[Profile] remoteConfigCache['planModeApiProvider']:",
+							"[Profile:Migration] remoteConfigCache['planModeApiProvider']:",
 							StateManager.instance.remoteConfigCache["planModeApiProvider"],
 						)
 						console.log(
-							"[Profile] taskStateCache['planModeApiProvider']:",
+							"[Profile:Migration] taskStateCache['planModeApiProvider']:",
 							StateManager.instance.taskStateCache["planModeApiProvider"],
 						)
 						console.log(
-							"[Profile] globalStateCache['planModeApiProvider']:",
+							"[Profile:Migration] globalStateCache['planModeApiProvider']:",
 							StateManager.instance.globalStateCache["planModeApiProvider"],
 						)
 						console.log(
-							"[Profile] remoteConfigCache['actModeApiProvider']:",
+							"[Profile:Migration] remoteConfigCache['actModeApiProvider']:",
 							StateManager.instance.remoteConfigCache["actModeApiProvider"],
 						)
 						console.log(
-							"[Profile] taskStateCache['actModeApiProvider']:",
+							"[Profile:Migration] taskStateCache['actModeApiProvider']:",
 							StateManager.instance.taskStateCache["actModeApiProvider"],
 						)
 						console.log(
-							"[Profile] globalStateCache['actModeApiProvider']:",
+							"[Profile:Migration] globalStateCache['actModeApiProvider']:",
 							StateManager.instance.globalStateCache["actModeApiProvider"],
 						)
 
 						const currentApiConfig = StateManager.instance.constructApiConfigurationFromCache()
-						console.log("[Profile] === Final Constructed Config ===")
-						console.log("[Profile] planModeApiProvider:", currentApiConfig.planModeApiProvider)
-						console.log("[Profile] actModeApiProvider:", currentApiConfig.actModeApiProvider)
-						console.log("[Profile] planModeOllamaModelId:", (currentApiConfig as any).planModeOllamaModelId)
-						console.log("[Profile] actModeOllamaModelId:", (currentApiConfig as any).actModeOllamaModelId)
-						console.log("[Profile] ollamaBaseUrl:", currentApiConfig.ollamaBaseUrl)
+						console.log("[Profile:Migration] === Final Constructed Config ===")
+						console.log("[Profile:Migration] planModeApiProvider:", currentApiConfig.planModeApiProvider)
+						console.log("[Profile:Migration] actModeApiProvider:", currentApiConfig.actModeApiProvider)
+						console.log("[Profile:Migration] planModeOllamaModelId:", (currentApiConfig as any).planModeOllamaModelId)
+						console.log("[Profile:Migration] actModeOllamaModelId:", (currentApiConfig as any).actModeOllamaModelId)
+						console.log("[Profile:Migration] ollamaBaseUrl:", currentApiConfig.ollamaBaseUrl)
 
 						const migratedProfile =
 							await StateManager.instance.profileManager.migrateFromLegacyConfig(currentApiConfig)
-						console.log("[Profile] Migrated profile:", {
+						console.log("[Profile:Migration] Migrated profile:", {
 							id: migratedProfile.metadata.id,
 							name: migratedProfile.metadata.name,
 							planMode: migratedProfile.configuration.planMode,
 						})
 
 						StateManager.instance.setGlobalState("profileMigrationCompleted", true)
-						console.log("[Profile] Profile system migration completed successfully")
+						console.log("[Profile:Migration] Profile system migration completed successfully")
 					} catch (error) {
 						console.error("[Profile:Migration] Profile system migration failed:", error)
 						// 마이그레이션 실패 시에도 계속 진행 (기존 방식으로 동작)
