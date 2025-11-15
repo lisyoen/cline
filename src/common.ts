@@ -129,6 +129,16 @@ async function showVersionUpdateAnnouncement(context: vscode.ExtensionContext) {
  * Performs cleanup when Cline is deactivated that is common to all platforms.
  */
 export async function tearDown(): Promise<void> {
+	// Flush StateManager pending changes before cleanup
+	try {
+		const stateManager = StateManager.getInstance()
+		if (stateManager) {
+			await stateManager.flush()
+		}
+	} catch (error) {
+		console.error("[tearDown] Failed to flush StateManager:", error)
+	}
+
 	// Clean up audio recording service to ensure no orphaned processes
 	audioRecordingService.cleanup()
 

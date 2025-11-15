@@ -1,6 +1,7 @@
 import { Empty } from "@shared/proto/cline/common"
 import type { DeleteProfileRequest } from "@shared/proto/cline/profile"
 import { ProfileManager } from "@/core/storage/ProfileManager"
+import { StateManager } from "@/core/storage/StateManager"
 import type { Controller } from "../index"
 
 /**
@@ -10,10 +11,16 @@ import type { Controller } from "../index"
  * @param request Delete profile request with profile ID
  * @returns Empty response
  */
-export async function deleteProfile(_controller: Controller, request: DeleteProfileRequest): Promise<Empty> {
+export async function deleteProfile(controller: Controller, request: DeleteProfileRequest): Promise<Empty> {
 	const profileManager = ProfileManager.get()
 
 	profileManager.deleteProfile(request.profileId)
+
+	// Immediately flush to disk to prevent data loss on quick restart
+	await StateManager.get().flush()
+
+	// Immediately update webview state
+	await controller.postStateToWebview()
 
 	return {}
 }

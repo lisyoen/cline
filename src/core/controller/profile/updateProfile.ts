@@ -1,5 +1,6 @@
 import type { ProfileResponse, UpdateProfileRequest } from "@shared/proto/cline/profile"
 import { ProfileManager } from "@/core/storage/ProfileManager"
+import { StateManager } from "@/core/storage/StateManager"
 import type { Controller } from "../index"
 
 /**
@@ -9,7 +10,7 @@ import type { Controller } from "../index"
  * @param request Update profile request with profile ID and optional updates
  * @returns The updated profile
  */
-export async function updateProfile(_controller: Controller, request: UpdateProfileRequest): Promise<ProfileResponse> {
+export async function updateProfile(controller: Controller, request: UpdateProfileRequest): Promise<ProfileResponse> {
 	const profileManager = ProfileManager.get()
 
 	const updates: any = {}
@@ -36,6 +37,12 @@ export async function updateProfile(_controller: Controller, request: UpdateProf
 	// }
 
 	const profile = profileManager.updateProfile(request.profileId, updates)
+
+	// Immediately flush to disk to prevent data loss on quick restart
+	await StateManager.get().flush()
+
+	// Immediately update webview state
+	await controller.postStateToWebview()
 
 	return {
 		profile: {

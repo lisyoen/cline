@@ -932,6 +932,47 @@ export class StateManager {
 	}
 
 	/**
+	 * Immediately flush all pending changes to disk
+	 * Used during extension deactivation to ensure data is saved
+	 */
+	public async flush(): Promise<void> {
+		// Clear any pending timeout
+		if (this.persistenceTimeout) {
+			clearTimeout(this.persistenceTimeout)
+			this.persistenceTimeout = null
+		}
+
+		// If there are no pending changes, return early
+		if (
+			this.pendingGlobalState.size === 0 &&
+			this.pendingSecrets.size === 0 &&
+			this.pendingWorkspaceState.size === 0 &&
+			this.pendingTaskState.size === 0
+		) {
+			return
+		}
+
+		try {
+			// Persist all pending changes immediately
+			await Promise.all([
+				this.persistGlobalStateBatch(this.pendingGlobalState),
+				this.persistSecretsBatch(this.pendingSecrets),
+				this.persistWorkspaceStateBatch(this.pendingWorkspaceState),
+				this.persistTaskStateBatch(this.pendingTaskState),
+			])
+
+			// Clear pending sets on successful persistence
+			this.pendingGlobalState.clear()
+			this.pendingSecrets.clear()
+			this.pendingWorkspaceState.clear()
+			this.pendingTaskState.clear()
+		} catch (error) {
+			console.error("[StateManager] Failed to flush pending changes:", error)
+			throw error
+		}
+	}
+
+	/**
 	 * Private method to batch persist global state keys with Promise.all
 	 */
 	private async persistGlobalStateBatch(keys: Set<GlobalStateAndSettingsKey>): Promise<void> {

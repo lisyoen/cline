@@ -1,6 +1,7 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { Plus, Settings2, Star, Trash2 } from "lucide-react"
-import { useState } from "react"
+import { useCallback, useState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ProfileServiceClient } from "@/services/grpc-client"
 import { ProfileModal } from "../ProfileModal"
@@ -25,6 +26,9 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	const [modalMode, setModalMode] = useState<"create" | "edit">("create")
 	const [editingProfile, setEditingProfile] = useState<EditingProfile | null>(null)
 
+	// 에러 상태
+	const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
 	// 프로필 생성 핸들러
 	const handleCreateProfile = () => {
 		setModalMode("create")
@@ -40,25 +44,38 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	}
 
 	// 프로필 저장 핸들러
-	const handleSaveProfile = async (name: string, description: string) => {
-		try {
-			if (modalMode === "create") {
-				await ProfileServiceClient.createProfile({ name, description })
-			} else if (editingProfile) {
-				await ProfileServiceClient.updateProfile({
-					profileId: editingProfile.id,
-					name,
-					description,
-				})
-			}
-			setModalOpen(false)
-		} catch (error) {
-			console.error("Failed to save profile:", error)
-			// TODO: Show error message to user
-		}
-	}
+	const handleSaveProfile = useCallback(
+		async (name: string, description: string) => {
+			// 에러 메시지 초기화
+			setErrorMessage(null)
 
-	// 프로필 시스템이 비활성화된 경우
+			// 모달을 먼저 닫아서 즉각적인 피드백 제공
+			setModalOpen(false)
+
+			try {
+				if (modalMode === "create") {
+					// gRPC 호출 - Extension Host가 즉시 상태 업데이트
+					await ProfileServiceClient.createProfile({ name, description })
+				} else if (editingProfile) {
+					await ProfileServiceClient.updateProfile({
+						profileId: editingProfile.id,
+						name,
+						description,
+					})
+				}
+			} catch (error) {
+				console.error("Failed to save profile:", error)
+
+				// 사용자에게 에러 메시지 표시
+				const message = error instanceof Error ? error.message : "Failed to save profile"
+				setErrorMessage(message)
+
+				// 3초 후 자동으로 에러 메시지 제거
+				setTimeout(() => setErrorMessage(null), 3000)
+			}
+		},
+		[modalMode, editingProfile],
+	) // 프로필 시스템이 비활성화된 경우
 	if (!profileSystemActive) {
 		return (
 			<div>
@@ -78,6 +95,13 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 		<div>
 			{renderSectionHeader?.("profiles")}
 			<Section>
+				{/* 에러 메시지 */}
+				{errorMessage && (
+					<Alert className="mb-4" variant="danger">
+						<AlertDescription>{errorMessage}</AlertDescription>
+					</Alert>
+				)}
+
 				{/* 헤더: 설명 + 새 프로필 버튼 */}
 				<div className="flex items-start justify-between mb-4">
 					<div className="flex-1">

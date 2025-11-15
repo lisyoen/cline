@@ -313,6 +313,12 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			context.globalState.get<GlobalStateAndSettings["openTelemetryLogMaxQueueSize"]>("openTelemetryLogMaxQueueSize")
 		const subagentsEnabled = context.globalState.get<GlobalStateAndSettings["subagentsEnabled"]>("subagentsEnabled")
 
+		// Profile system state
+		const profileSystemState = context.globalState.get<GlobalStateAndSettings["profileSystemState"]>("profileSystemState")
+		const activeProfileId = context.globalState.get<GlobalStateAndSettings["activeProfileId"]>("activeProfileId")
+		const profileMigrationCompleted =
+			context.globalState.get<GlobalStateAndSettings["profileMigrationCompleted"]>("profileMigrationCompleted")
+
 		// Get mode-related configurations
 		const mode = context.globalState.get<GlobalStateAndSettings["mode"]>("mode")
 
@@ -688,9 +694,9 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			remoteWorkflowToggles: remoteWorkflowToggles || {},
 
 			// Profile system state (added for multi-profile support)
-			profileSystemState: undefined,
-			activeProfileId: undefined,
-			profileMigrationCompleted: undefined,
+			profileSystemState,
+			activeProfileId,
+			profileMigrationCompleted,
 		}
 	} catch (error) {
 		console.error("[StateHelpers] Failed to read global state:", error)

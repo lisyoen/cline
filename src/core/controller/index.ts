@@ -149,6 +149,21 @@ export class Controller {
 		this.ocaAuthService = OcaAuthService.initialize(this)
 		this.accountService = ClineAccountService.getInstance()
 
+		// Register ProfileManager event listeners
+		if (this.stateManager.isProfileSystemActive()) {
+			try {
+				const profileManager = this.stateManager.getProfileManager()
+				profileManager.addEventListener((_event) => {
+					// Profile changed - update webview immediately
+					this.postStateToWebview().catch((error) => {
+						console.error("[Controller] Failed to update webview after profile event:", error)
+					})
+				})
+			} catch (error) {
+				console.error("[Controller] Failed to register ProfileManager listeners:", error)
+			}
+		}
+
 		const authStatusHandler: StreamingResponseHandler<AuthState> = async (response, _isLast, _seqNumber): Promise<void> => {
 			if (response.user) {
 				fetchRemoteConfig(this)
