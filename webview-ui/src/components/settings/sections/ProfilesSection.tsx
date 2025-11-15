@@ -1,6 +1,16 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { Plus, Settings2, Star, Trash2 } from "lucide-react"
 import { useCallback, useState } from "react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/common/AlertDialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ProfileServiceClient } from "@/services/grpc-client"
@@ -25,6 +35,10 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	const [modalOpen, setModalOpen] = useState(false)
 	const [modalMode, setModalMode] = useState<"create" | "edit">("create")
 	const [editingProfile, setEditingProfile] = useState<EditingProfile | null>(null)
+
+	// 삭제 확인 모달 상태
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+	const [deletingProfileId, setDeletingProfileId] = useState<string | null>(null)
 
 	// 에러 상태
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -75,7 +89,50 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 			}
 		},
 		[modalMode, editingProfile],
-	) // 프로필 시스템이 비활성화된 경우
+	)
+
+	// 프로필 삭제 요청 핸들러
+	const handleDeleteProfileRequest = (profileId: string) => {
+		setDeletingProfileId(profileId)
+		setDeleteDialogOpen(true)
+	}
+
+	// 프로필 삭제 확인 핸들러
+	const handleDeleteProfile = useCallback(async () => {
+		if (!deletingProfileId) {
+			return
+		}
+
+		setErrorMessage(null)
+		setDeleteDialogOpen(false)
+
+		try {
+			await ProfileServiceClient.deleteProfile({ profileId: deletingProfileId })
+			// 선택된 프로필이 삭제되었으면 선택 해제
+			if (selectedProfileId === deletingProfileId) {
+				setSelectedProfileId(null)
+			}
+		} catch (error) {
+			console.error("Failed to delete profile:", error)
+			const message = error instanceof Error ? error.message : "Failed to delete profile"
+			setErrorMessage(message)
+			setTimeout(() => setErrorMessage(null), 3000)
+		}
+	}, [deletingProfileId, selectedProfileId])
+
+	// 프로필 활성화 핸들러
+	const handleActivateProfile = useCallback(async (profileId: string) => {
+		setErrorMessage(null)
+
+		try {
+			await ProfileServiceClient.activateProfile({ profileId })
+		} catch (error) {
+			console.error("Failed to activate profile:", error)
+			const message = error instanceof Error ? error.message : "Failed to activate profile"
+			setErrorMessage(message)
+			setTimeout(() => setErrorMessage(null), 3000)
+		}
+	}, []) // 프로필 시스템이 비활성화된 경우
 	if (!profileSystemActive) {
 		return (
 			<div>
@@ -155,7 +212,13 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 											<Settings2 className="w-4 h-4" />
 										</VSCodeButton>
 										{!profile.isDefault && (
-											<VSCodeButton appearance="icon" aria-label="Delete profile">
+											<VSCodeButton
+												appearance="icon"
+												aria-label="Delete profile"
+												onClick={(e) => {
+													e.stopPropagation()
+													handleDeleteProfileRequest(profile.id)
+												}}>
 												<Trash2 className="w-4 h-4" />
 											</VSCodeButton>
 										)}
@@ -168,7 +231,13 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 								{/* 활성화 버튼 */}
 								{!isActive && (
 									<div className="mt-3">
-										<VSCodeButton appearance="secondary" className="w-full">
+										<VSCodeButton
+											appearance="secondary"
+											className="w-full"
+											onClick={(e) => {
+												e.stopPropagation()
+												handleActivateProfile(profile.id)
+											}}>
 											Activate Profile
 										</VSCodeButton>
 									</div>
@@ -201,6 +270,22 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 				profileDescription={editingProfile?.description}
 				profileName={editingProfile?.name}
 			/>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Profile</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to delete this profile? This action cannot be undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={handleDeleteProfile}>Delete</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	)
 }
