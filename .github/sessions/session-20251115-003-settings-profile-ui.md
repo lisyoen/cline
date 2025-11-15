@@ -610,6 +610,57 @@ interface ProfileModalProps {
 7. Cline에서 메시지 전송
 8. → 활성 프로필의 API 설정 사용됨!
 
+### 9. 프로필 API Provider 버그 해결 - 2025-11-16 ✅
+
+#### 문제 발견
+**증상**: API Provider가 Ollama로 설정되었는데도 "OpenAI API key is required" 에러 발생
+
+**디버깅 과정**:
+1. 프로필의 `planMode.apiProvider`가 "openai"로 저장됨 (잘못됨)
+2. Settings UI는 "ollama"로 표시됨 (올바름)
+3. 임시 수정 코드 추가 → 사용자 지적으로 제거
+4. 근본 원인 분석 필요
+
+#### 원인 분석
+**마이그레이션 로그 추가**:
+```
+[Profile:Migration] globalStateCache['planModeApiProvider']: ollama ✅
+[Profile:Migration] globalStateCache['actModeApiProvider']: ollama ✅
+[Profile:Migration] planModeApiProvider: ollama ✅
+[Profile:Migration] actModeApiProvider: ollama ✅
+```
+
+**결론**: 
+- ✅ 현재 Settings는 정상 (ollama)
+- ✅ 마이그레이션도 정상 (ollama로 저장)
+- ✅ 이전 버그는 이미 해결됨
+- ❌ 이전에 생성된 프로필만 잘못된 상태
+
+#### 해결 방법
+**기존 프로필 재생성**:
+1. 마이그레이션 강제 재실행으로 Default 프로필 재생성
+2. 올바른 apiProvider (ollama) 저장 확인
+3. 디버깅 로그 제거
+
+**코드 정리**:
+- forceMigration 플래그 제거
+- 상세 로그 제거
+- 깔끔한 에러 처리만 유지
+
+#### 세션 관리 개선
+**문제점 지적**: Git 커밋 로그가 너무 많이 생성됨
+**개선 방향**:
+- 의미 있는 변경만 커밋
+- 디버깅 과정은 세션 파일에 상세 기록
+- 커밋 메시지는 간결하게
+
+#### 완료 항목
+- ✅ 근본 원인 파악 (이전 프로필 생성 시점 문제)
+- ✅ 디버깅 로그 추가 및 분석
+- ✅ 마이그레이션 정상 동작 확인
+- ✅ 디버깅 코드 제거
+- ✅ 세션 파일 업데이트
+
 ### 다음 단계
 1. **프로필 상세 설정 UI 구현** (진행 중 🚧)
    - ✅ profiles.ts에 확장 포인트 문서화
