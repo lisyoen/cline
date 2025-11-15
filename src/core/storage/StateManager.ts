@@ -139,6 +139,20 @@ export class StateManager {
 							"[Profile] Active profile planMode details:",
 							JSON.stringify(profile?.configuration.planMode, null, 2),
 						)
+
+						// ⭐ TEMPORARY FIX: apiProvider가 openai인 경우 ollama로 수정
+						if (profile && profile.configuration.planMode?.apiProvider === "openai") {
+							console.log("[Profile] 🔧 Fixing apiProvider from openai to ollama...")
+							StateManager.instance.profileManager.updateProfile(profile.metadata.id, {
+								configuration: {
+									planMode: {
+										...profile.configuration.planMode,
+										apiProvider: "ollama",
+									},
+								},
+							})
+							console.log("[Profile] ✅ Fixed! apiProvider is now ollama")
+						}
 					} else {
 						console.warn("[Profile] No active profile found!")
 					}
