@@ -2,6 +2,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { Plus, Settings2, Star, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { ProfileServiceClient } from "@/services/grpc-client"
 import { ProfileModal } from "../ProfileModal"
 import Section from "../Section"
 
@@ -39,16 +40,22 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	}
 
 	// 프로필 저장 핸들러
-	const handleSaveProfile = (name: string, description: string) => {
-		// TODO: ProfileManager API 호출 (gRPC)
-		if (modalMode === "create") {
-			console.log("Create profile:", { name, description })
-			// ProfileManager.createProfile({ name, description, configuration: {...} })
-		} else if (editingProfile) {
-			console.log("Update profile:", { id: editingProfile.id, name, description })
-			// ProfileManager.updateProfile(editingProfile.id, { name, description })
+	const handleSaveProfile = async (name: string, description: string) => {
+		try {
+			if (modalMode === "create") {
+				await ProfileServiceClient.createProfile({ name, description })
+			} else if (editingProfile) {
+				await ProfileServiceClient.updateProfile({
+					profileId: editingProfile.id,
+					name,
+					description,
+				})
+			}
+			setModalOpen(false)
+		} catch (error) {
+			console.error("Failed to save profile:", error)
+			// TODO: Show error message to user
 		}
-		setModalOpen(false)
 	}
 
 	// 프로필 시스템이 비활성화된 경우

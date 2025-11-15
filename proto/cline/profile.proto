@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package cline;
+
+import "cline/common.proto";
+import "cline/models.proto";
+
+option go_package = "github.com/cline/grpc-go/cline";
+option java_multiple_files = true;
+option java_package = "bot.cline.proto";
+
+// Service for profile management operations
+service ProfileService {
+  // Creates a new profile
+  rpc createProfile(CreateProfileRequest) returns (ProfileResponse);
+  
+  // Updates an existing profile
+  rpc updateProfile(UpdateProfileRequest) returns (ProfileResponse);
+  
+  // Deletes a profile (cannot delete default profile)
+  rpc deleteProfile(DeleteProfileRequest) returns (Empty);
+  
+  // Activates a profile (sets as active)
+  rpc activateProfile(ActivateProfileRequest) returns (Empty);
+  
+  // Duplicates an existing profile
+  rpc duplicateProfile(DuplicateProfileRequest) returns (ProfileResponse);
+  
+  // Gets a single profile by ID
+  rpc getProfile(GetProfileRequest) returns (ProfileResponse);
+  
+  // Gets all profiles
+  rpc getAllProfiles(EmptyRequest) returns (ProfileListResponse);
+  
+  // Imports a profile from JSON
+  rpc importProfile(ImportProfileRequest) returns (ProfileResponse);
+  
+  // Exports a profile to JSON
+  rpc exportProfile(ExportProfileRequest) returns (ExportProfileResponse);
+}
+
+// Profile metadata
+message ProfileMetadata {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+  bool is_default = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  optional string color = 7;
+  optional string icon = 8;
+}
+
+// Profile configuration (full API configuration)
+message ProfileConfiguration {
+  // Main API configuration
+  ApiConfiguration api_configuration = 1;
+}
+
+// Complete profile (metadata + configuration)
+message Profile {
+  ProfileMetadata metadata = 1;
+  ProfileConfiguration configuration = 2;
+}
+
+// Create profile request
+message CreateProfileRequest {
+  string name = 1;
+  optional string description = 2;
+  optional ProfileConfiguration configuration = 3;
+}
+
+// Update profile request
+message UpdateProfileRequest {
+  string profile_id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional ProfileConfiguration configuration = 4;
+  optional string color = 5;
+  optional string icon = 6;
+}
+
+// Delete profile request
+message DeleteProfileRequest {
+  string profile_id = 1;
+}
+
+// Activate profile request
+message ActivateProfileRequest {
+  string profile_id = 1;
+}
+
+// Duplicate profile request
+message DuplicateProfileRequest {
+  string source_profile_id = 1;
+  string new_name = 2;
+  optional string new_description = 3;
+}
+
+// Get profile request
+message GetProfileRequest {
+  string profile_id = 1;
+}
+
+// Import profile request
+message ImportProfileRequest {
+  string json_data = 1;
+  optional string new_name = 2;
+}
+
+// Export profile request
+message ExportProfileRequest {
+  string profile_id = 1;
+}
+
+// Export profile response
+message ExportProfileResponse {
+  string json_data = 1;
+}
+
+// Profile response
+message ProfileResponse {
+  Profile profile = 1;
+}
+
+// Profile list response
+message ProfileListResponse {
+  repeated Profile profiles = 1;
+}
