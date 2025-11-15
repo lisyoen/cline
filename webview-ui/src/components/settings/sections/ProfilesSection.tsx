@@ -281,7 +281,7 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
 						<AlertDialogAction onClick={handleDeleteProfile}>Delete</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

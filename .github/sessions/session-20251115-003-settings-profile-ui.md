@@ -34,16 +34,16 @@ LLM 다중 설정 기능의 Settings 프로필 관리 UI 구현 (Phase 4)
 2. ✅ Settings UI 구조 분석
 3. ✅ 프로필 관리 탭 추가
 4. ✅ 프로필 목록 컴포넌트 구현
-5. ⬜ 프로필 추가/수정 모달 구현
-6. ⬜ 프로필 삭제 확인 모달 구현
-7. ⬜ **프로필 상세 설정 UI** (전체 Provider)
+5. ✅ 프로필 추가/수정 모달 구현
+6. ✅ 프로필 삭제 확인 모달 구현
+7. ✅ ProfileServiceClient gRPC 연동
+8. ⬜ **프로필 상세 설정 UI** (전체 Provider)
    - API Provider 선택 드롭다운
    - Provider별 설정 필드 동적 표시
    - Plan/Act Mode 별도 설정
-8. ⬜ 프로필 Import/Export/Duplicate 기능
-9. ⬜ gRPC 서비스 연동
-10. ⬜ 테스트 및 검증
-11. ⬜ GitHub 동기화
+9. ⬜ 프로필 Import/Export/Duplicate 기능
+10. ⬜ 최종 테스트 및 검증
+11. ⬜ 세션 완료 및 GitHub 동기화
 
 ## 진행 상황
 
@@ -277,11 +277,104 @@ interface ProfileModalProps {
 - ✅ TypeScript 에러 없음
 - ✅ Git 커밋 및 푸시
 
+### 5. ProfilesSection gRPC 연동 및 삭제 확인 모달 - 2025-11-15 ✅
+
+#### gRPC 서비스 구조 확인
+**ProfileServiceClient** (webview-ui/src/services/grpc-client.ts)
+- ✅ `createProfile(request)` - 프로필 생성
+- ✅ `updateProfile(request)` - 프로필 수정
+- ✅ `deleteProfile(request)` - 프로필 삭제
+- ✅ `activateProfile(request)` - 프로필 활성화
+- ✅ `duplicateProfile(request)` - 프로필 복제
+- ✅ `getAllProfiles()` - 전체 프로필 조회
+
+**Extension Host 백엔드** (src/core/controller/profile/*.ts)
+- ✅ `createProfile()` - ProfileManager.createProfile() 호출
+- ✅ `updateProfile()` - ProfileManager.updateProfile() 호출
+- ✅ `deleteProfile()` - ProfileManager.deleteProfile() 호출
+- ✅ `activateProfile()` - ProfileManager.switchProfile() 호출
+- ✅ StateManager.flush() 및 postStateToWebview() 자동 호출
+
+#### ProfilesSection 변경사항
+
+1. **gRPC 클라이언트 import**
+   ```typescript
+   import { ProfileServiceClient } from "@/services/grpc-client"
+   ```
+
+2. **삭제 확인 모달 상태 추가**
+   ```typescript
+   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+   const [deletingProfileId, setDeletingProfileId] = useState<string | null>(null)
+   ```
+
+3. **에러 상태 추가**
+   ```typescript
+   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+   ```
+
+4. **핸들러 구현**
+   - `handleSaveProfile()`: Create/Update gRPC 호출
+     - 성공 시: 모달 닫기 (Extension Host가 자동으로 UI 업데이트)
+     - 실패 시: 에러 메시지 표시 (3초 후 자동 제거)
+   
+   - `handleDeleteProfileRequest(profileId)`: 삭제 확인 모달 열기
+   
+   - `handleDeleteProfile()`: 삭제 확인 후 gRPC 호출
+     - 성공 시: 선택 해제 (삭제된 프로필인 경우)
+     - 실패 시: 에러 메시지 표시
+   
+   - `handleActivateProfile(profileId)`: Activate 버튼 클릭
+     - Extension Host가 활성 프로필 변경 및 UI 업데이트
+
+5. **UI 개선**
+   - 에러 메시지 Alert 컴포넌트 (상단에 표시)
+   - Edit 버튼 클릭 시 모달 열기
+   - Delete 버튼 클릭 시 확인 모달 열기 (기본 프로필 제외)
+   - Activate 버튼 클릭 시 즉시 활성화
+   - 이벤트 버블링 방지 (`e.stopPropagation()`)
+
+6. **삭제 확인 AlertDialog**
+   ```tsx
+   <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+     <AlertDialogContent>
+       <AlertDialogHeader>
+         <AlertDialogTitle>Delete Profile</AlertDialogTitle>
+         <AlertDialogDescription>
+           Are you sure you want to delete this profile? This action cannot be undone.
+         </AlertDialogDescription>
+       </AlertDialogHeader>
+       <AlertDialogFooter>
+         <AlertDialogCancel>Cancel</AlertDialogCancel>
+         <AlertDialogAction onClick={handleDeleteProfile}>Delete</AlertDialogAction>
+       </AlertDialogFooter>
+     </AlertDialogContent>
+   </AlertDialog>
+   ```
+
+#### 커밋 정보
+- **커밋 해시**: b58ef600
+- **메시지**: "feat: ProfilesSection에 CRUD gRPC 연동 및 삭제 확인 모달 추가"
+- **변경 파일**: ProfilesSection.tsx (+88 lines, -3 lines)
+- **상태**: ✅ GitHub에 푸시 완료
+
+#### 완료 항목
+- ✅ ProfileServiceClient gRPC 호출 통합
+- ✅ Create/Update 프로필 핸들러 구현
+- ✅ Delete 프로필 확인 모달 구현
+- ✅ Activate 프로필 핸들러 구현
+- ✅ 에러 처리 및 사용자 피드백 UI
+- ✅ 이벤트 버블링 방지
+- ✅ TypeScript 컴파일 에러 없음
+- ✅ Git 커밋 및 푸시
+
 #### 미완료 항목 (다음 단계)
-- ⬜ ProfileManager gRPC 연동
-- ⬜ 프로필 삭제 확인 모달
+- ⬜ Import/Export/Duplicate 기능 구현
 - ⬜ **프로필 상세 설정 UI** (40+ Provider)
-- ⬜ Import/Export/Duplicate 기능
+  - API Provider 선택 드롭다운
+  - Provider별 동적 폼 필드
+  - Plan/Act Mode 별도 설정
+  - ApiOptions 컴포넌트 재사용
 
 ### 다음 단계
 1. **프로필 CRUD gRPC 연동** (우선순위: 높음)
