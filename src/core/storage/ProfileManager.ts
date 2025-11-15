@@ -499,6 +499,17 @@ export class ProfileManager {
 	 * 기존 ApiConfiguration을 Profile로 마이그레이션
 	 */
 	public migrateFromLegacyConfig(apiConfig: any): Profile {
+		// 기존 "Default" 프로필이 있는지 확인
+		const existingProfiles = this.getAllProfiles()
+		const existingDefault = existingProfiles.find((p) => p.metadata.name === "Default")
+
+		if (existingDefault) {
+			console.log("[Profile] Default profile already exists, skipping migration:", existingDefault.metadata.id)
+			return existingDefault
+		}
+
+		console.log("[Profile] Creating new Default profile from legacy configuration")
+
 		// "Default" 프로필 생성
 		const metadata: ProfileMetadata = {
 			id: ulid(),
