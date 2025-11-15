@@ -155,12 +155,42 @@ private saveProfile(profile: Profile): void {
 - 없으면 새로 생성
 - 로그 추가로 동작 추적 가능
 
-**커밋**: (작업 중)
+**커밋**: 89105d7d "fix: migrateFromLegacyConfig()에 중복 방지 로직 추가"
 
-### 2. 중복 프로필 정리 방법 제공
-사용자가 기존 중복 프로필을 정리할 수 있도록:
-1. 모든 "Default" 프로필 중 하나만 남기고 삭제
-2. 또는 VSCode globalState 초기화 후 재마이그레이션
+### 2. 중복 프로필 정리 방법 제공 - 2025-11-16 ✅
+
+사용자가 기존 중복 프로필을 정리하는 방법:
+
+#### 방법 1: UI에서 수동 삭제 (권장)
+1. Settings → Profiles 탭
+2. 중복된 "Default" 프로필들 중 하나만 남기고 나머지 Delete (휴지통 아이콘)
+3. 남은 프로필을 Activate
+
+#### 방법 2: VSCode 설정 초기화 (완전 초기화)
+1. VSCode 완전 종료
+2. VSCode 설정 폴더로 이동:
+   - Windows: `%APPDATA%\Code\User\globalStorage\`
+   - Mac: `~/Library/Application Support/Code/User/globalStorage/`
+   - Linux: `~/.config/Code/User/globalStorage/`
+3. `saoudrizwan.claude-dev` 폴더 삭제
+4. VSCode 재시작 → 자동으로 새 Default 프로필 생성
+
+#### 방법 3: PowerShell 스크립트로 정리 (고급)
+```powershell
+# VSCode globalState JSON 파일 직접 수정
+# 주의: VSCode 종료 후 실행!
+$statePath = "$env:APPDATA\Code\User\globalStorage\saoudrizwan.claude-dev\state.vscdb"
+# JSON 파싱하여 profileSystemState.profiles 배열에서 중복 제거
+```
+
+### 3. 테스트 및 검증 - 2025-11-16 🚧
+
+**테스트 계획**:
+1. ✅ 코드 수정 완료
+2. ⬜ Extension Host 재시작
+3. ⬜ 콘솔에서 "[Profile] Default profile already exists" 로그 확인
+4. ⬜ Settings → Profiles에서 중복 생성 안 되는지 확인
+5. ⬜ 기존 중복 프로필은 수동 삭제 필요
 
 ## 테스트 계획
 1. VSCode 완전 종료
