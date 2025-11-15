@@ -440,10 +440,10 @@ export function buildApiHandler(configuration: ApiConfiguration, mode: Mode): Ap
 
 	const apiProvider = mode === "plan" ? planModeApiProvider : actModeApiProvider
 
-	console.log(`[buildApiHandler] mode=${mode}, apiProvider=${apiProvider}`)
-	console.log(`[buildApiHandler] planModeApiProvider=${planModeApiProvider}, actModeApiProvider=${actModeApiProvider}`)
+	console.log(`[API] buildApiHandler: mode=${mode}, apiProvider=${apiProvider}`)
+	console.log(`[API] planModeApiProvider=${planModeApiProvider}, actModeApiProvider=${actModeApiProvider}`)
 	console.log(
-		`[buildApiHandler] planModeOllamaModelId=${options.planModeOllamaModelId}, actModeOllamaModelId=${options.actModeOllamaModelId}`,
+		`[API] planModeOllamaModelId=${options.planModeOllamaModelId}, actModeOllamaModelId=${options.actModeOllamaModelId}`,
 	)
 
 	// Validate thinking budget tokens against model's maxTokens to prevent API errors
