@@ -530,10 +530,14 @@ export class StateManager {
 			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
 		}
 
+		console.log("[StateManager] getApiConfigurationForTask called")
+
 		// Check if profile system is active
 		const profileManager = ProfileManager.get()
 		const mode = this.getGlobalSettingsKey("mode") || "plan"
 		const usePlanMode = mode === "plan"
+
+		console.log(`[StateManager] mode=${mode}, usePlanMode=${usePlanMode}`)
 
 		try {
 			// Try to get configuration from active profile
@@ -542,12 +546,14 @@ export class StateManager {
 				console.log(`[StateManager] Using profile configuration for Task (mode: ${mode})`)
 				return profileConfig
 			}
+			console.log("[StateManager] No profile configuration, falling back to legacy")
 		} catch (error) {
 			// Profile system not available or failed, fall back to legacy
-			console.log("Profile system not available, using legacy API configuration:", error)
+			console.log("[StateManager] Profile system error, using legacy API configuration:", error)
 		}
 
 		// Fallback: Construct API configuration from cached component keys (legacy)
+		console.log("[StateManager] Using legacy API configuration")
 		return this.constructApiConfigurationFromCache()
 	} /**
 	 * Convenience method for setting API configuration
