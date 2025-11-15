@@ -14,6 +14,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { ProfileServiceClient } from "@/services/grpc-client"
+import { ProfileApiConfigModal } from "../ProfileApiConfigModal"
 import { ProfileModal } from "../ProfileModal"
 import Section from "../Section"
 
@@ -39,6 +40,10 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	// 삭제 확인 모달 상태
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [deletingProfileId, setDeletingProfileId] = useState<string | null>(null)
+
+	// API 설정 모달 상태
+	const [apiConfigModalOpen, setApiConfigModalOpen] = useState(false)
+	const [configuringProfile, setConfiguringProfile] = useState<{ id: string; name: string } | null>(null)
 
 	// 에러 상태
 	const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -132,7 +137,19 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 			setErrorMessage(message)
 			setTimeout(() => setErrorMessage(null), 3000)
 		}
-	}, []) // 프로필 시스템이 비활성화된 경우
+	}, [])
+
+	// API 설정 열기 핸들러
+	const handleConfigureApi = (profile: { id: string; name: string }) => {
+		setConfiguringProfile(profile)
+		setApiConfigModalOpen(true)
+	}
+
+	// API 설정 저장 핸들러
+	const handleSaveApiConfig = () => {
+		// TODO: 실제 저장 로직은 ProfileApiConfigModal 내부에서 처리
+		console.log("API configuration saved")
+	} // 프로필 시스템이 비활성화된 경우
 	if (!profileSystemActive) {
 		return (
 			<div>
@@ -228,20 +245,29 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 								{/* 프로필 설명 */}
 								{profile.description && <p className="text-sm opacity-70 m-0 mb-2">{profile.description}</p>}
 
-								{/* 활성화 버튼 */}
-								{!isActive && (
-									<div className="mt-3">
+								{/* API 설정 버튼 */}
+								<div className="mt-3 flex gap-2">
+									<VSCodeButton
+										appearance="secondary"
+										className="flex-1"
+										onClick={(e) => {
+											e.stopPropagation()
+											handleConfigureApi(profile)
+										}}>
+										Configure API
+									</VSCodeButton>
+									{!isActive && (
 										<VSCodeButton
-											appearance="secondary"
-											className="w-full"
+											appearance="primary"
+											className="flex-1"
 											onClick={(e) => {
 												e.stopPropagation()
 												handleActivateProfile(profile.id)
 											}}>
-											Activate Profile
+											Activate
 										</VSCodeButton>
-									</div>
-								)}
+									)}
+								</div>
 							</div>
 						)
 					})}
@@ -286,6 +312,17 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* API Configuration Modal */}
+			{configuringProfile && (
+				<ProfileApiConfigModal
+					onOpenChange={setApiConfigModalOpen}
+					onSave={handleSaveApiConfig}
+					open={apiConfigModalOpen}
+					profileId={configuringProfile.id}
+					profileName={configuringProfile.name}
+				/>
+			)}
 		</div>
 	)
 }

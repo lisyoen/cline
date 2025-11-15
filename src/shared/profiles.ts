@@ -285,11 +285,81 @@ export interface CommonConfiguration {
 
 /**
  * 프로필 설정 (델타 방식)
+ *
+ * ⭐ 현재 구현된 설정:
+ * - planMode: Plan 모드 API 설정
+ * - actMode: Act 모드 API 설정
+ * - common: 공통 Provider 설정
+ *
+ * 🚧 TODO: 추가 가능한 설정들 (기여 환영!)
+ * 프로필을 완전한 독립 환경으로 만들기 위해 아래 설정들을 추가할 수 있습니다:
+ *
+ * 1. 자동화 설정:
+ *    - autoApproval?: AutoApprovalSettings  // 자동 승인 설정
+ *    - strictPlanMode?: boolean             // 엄격 Plan 모드
+ *    - yoloMode?: boolean                   // YOLO 모드
+ *
+ * 2. 브라우저 설정:
+ *    - browser?: BrowserSettings            // 브라우저 설정
+ *    - remoteBrowserHost?: string           // 원격 브라우저 호스트
+ *
+ * 3. 터미널 설정:
+ *    - terminal?: {
+ *        shellIntegrationTimeout?: number
+ *        terminalReuseEnabled?: boolean
+ *        terminalOutputLineLimit?: number
+ *        defaultTerminalProfile?: string
+ *        vscodeTerminalExecutionMode?: string
+ *      }
+ *
+ * 4. 프롬프트 설정:
+ *    - prompts?: {
+ *        customPrompt?: string
+ *        preferredLanguage?: string
+ *      }
+ *
+ * 5. 에이전트 설정:
+ *    - agent?: {
+ *        maxConsecutiveMistakes?: number
+ *        subagentTerminalOutputLineLimit?: number
+ *        subagentsEnabled?: boolean
+ *      }
+ *
+ * 6. 기능 토글:
+ *    - features?: {
+ *        mcpDisplayMode?: McpDisplayMode
+ *        enableCheckpoints?: boolean
+ *        useAutoCondense?: boolean
+ *        autoCondenseThreshold?: number
+ *        hooksEnabled?: ClineFeatureSetting
+ *        nativeToolCall?: ClineFeatureSetting
+ *      }
+ *
+ * 7. UI/UX 설정:
+ *    - ui?: {
+ *        favoritedModelIds?: string[]
+ *        mcpResponsesCollapsed?: boolean
+ *      }
+ *
+ * 8. Focus Chain & Dictation:
+ *    - focusChain?: FocusChainSettings
+ *    - dictation?: DictationSettings
+ *
+ * 구현 가이드:
+ * 1. 위 인터페이스에 필드 추가
+ * 2. ProfileManager에서 변환 로직 추가 (convertToApiConfiguration 등)
+ * 3. Settings UI에 해당 설정 컴포넌트 추가
+ * 4. 마이그레이션 로직 업데이트 (migrateFromLegacyConfig)
+ *
+ * 참고: ExtensionState의 모든 설정을 점진적으로 옮길 수 있습니다.
  */
 export interface ProfileConfiguration {
 	planMode?: PlanModeConfiguration
 	actMode?: ActModeConfiguration
 	common?: CommonConfiguration
+
+	// 🚧 Future settings will be added here
+	// See TODO comments above for available expansion points
 }
 
 /**
