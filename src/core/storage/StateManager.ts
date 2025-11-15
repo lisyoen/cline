@@ -109,7 +109,19 @@ export class StateManager {
 						const currentApiConfig = StateManager.instance.constructApiConfigurationFromCache()
 						console.log("[Profile] Current API config keys:", Object.keys(currentApiConfig))
 						console.log("[Profile] planModeApiProvider:", currentApiConfig.planModeApiProvider)
+						console.log("[Profile] actModeApiProvider:", currentApiConfig.actModeApiProvider)
 						console.log("[Profile] planModeOllamaModelId:", (currentApiConfig as any).planModeOllamaModelId)
+						console.log("[Profile] ollamaBaseUrl:", currentApiConfig.ollamaBaseUrl)
+
+						// 캐시 직접 확인
+						console.log(
+							"[Profile] globalStateCache['planModeApiProvider']:",
+							StateManager.instance.globalStateCache["planModeApiProvider"],
+						)
+						console.log(
+							"[Profile] taskStateCache['planModeApiProvider']:",
+							StateManager.instance.taskStateCache["planModeApiProvider"],
+						)
 
 						const migratedProfile =
 							await StateManager.instance.profileManager.migrateFromLegacyConfig(currentApiConfig)
@@ -139,20 +151,6 @@ export class StateManager {
 							"[Profile] Active profile planMode details:",
 							JSON.stringify(profile?.configuration.planMode, null, 2),
 						)
-
-						// ⭐ TEMPORARY FIX: apiProvider가 openai인 경우 ollama로 수정
-						if (profile && profile.configuration.planMode?.apiProvider === "openai") {
-							console.log("[Profile] 🔧 Fixing apiProvider from openai to ollama...")
-							StateManager.instance.profileManager.updateProfile(profile.metadata.id, {
-								configuration: {
-									planMode: {
-										...profile.configuration.planMode,
-										apiProvider: "ollama",
-									},
-								},
-							})
-							console.log("[Profile] ✅ Fixed! apiProvider is now ollama")
-						}
 					} else {
 						console.warn("[Profile] No active profile found!")
 					}
