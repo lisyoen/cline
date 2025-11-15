@@ -158,7 +158,7 @@ export class StateManager {
 						StateManager.instance.setGlobalState("profileMigrationCompleted", true)
 						console.log("[Profile] Profile system migration completed successfully")
 					} catch (error) {
-						console.error("[Profile] Profile system migration failed:", error)
+						console.error("[Profile:Migration] Profile system migration failed:", error)
 						// 마이그레이션 실패 시에도 계속 진행 (기존 방식으로 동작)
 					}
 				} else {
