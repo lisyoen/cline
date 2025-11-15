@@ -183,14 +183,61 @@ $statePath = "$env:APPDATA\Code\User\globalStorage\saoudrizwan.claude-dev\state.
 # JSON 파싱하여 profileSystemState.profiles 배열에서 중복 제거
 ```
 
-### 3. 테스트 및 검증 - 2025-11-16 🚧
+### 3. 테스트 및 검증 - 2025-11-16 ✅
 
-**테스트 계획**:
+**테스트 결과**:
 1. ✅ 코드 수정 완료
-2. ⬜ Extension Host 재시작
-3. ⬜ 콘솔에서 "[Profile] Default profile already exists" 로그 확인
-4. ⬜ Settings → Profiles에서 중복 생성 안 되는지 확인
-5. ⬜ 기존 중복 프로필은 수동 삭제 필요
+2. ✅ Extension Host 재시작
+3. ✅ 중복 Default 프로필 자동 정리 확인
+4. ✅ 활성 프로필 자동 활성화 확인
+5. ✅ Settings → Profiles에서 정상 표시
+
+**추가 방어 로직 구현**:
+1. ✅ 중복 정리 시 활성 프로필 자동 전환
+2. ✅ 활성 프로필 ID는 있지만 프로필이 없는 경우 처리
+3. ✅ 활성 프로필 없을 시 isDefault 프로필 우선 활성화
+
+## 완료 요약
+
+### 문제
+- 매번 Extension Host 재시작 시 중복 Default 프로필 생성
+- UI에서 isDefault 프로필 삭제 불가
+- 활성 프로필 없거나 잘못된 경우 처리 안 됨
+
+### 해결
+1. **migrateFromLegacyConfig() 중복 방지**
+   - 기존 Default 프로필 확인 후 재사용
+   - 커밋: 89105d7d
+
+2. **cleanupDuplicateDefaultProfiles() 추가**
+   - 중복 발견 시 자동 정리
+   - 가장 최근 프로필만 유지
+   - 경고 메시지로 문제 감지
+   - 커밋: b0c5f3c7, ff5f7081
+
+3. **활성 프로필 자동 전환**
+   - 중복 정리 시 활성 프로필 확인
+   - 삭제되면 keepProfile로 전환
+   - 커밋: d6ace71d
+
+4. **활성 프로필 방어 로직**
+   - 프로필 ID는 있는데 실제 없는 경우 처리
+   - 활성 프로필 없으면 isDefault 우선 활성화
+   - 커밋: d442de4d, dac3f955, 3ec72a63
+
+### 파일 변경
+- `src/core/storage/ProfileManager.ts`
+  - migrateFromLegacyConfig() 중복 확인 추가
+  - cleanupDuplicateDefaultProfiles() 메서드 추가
+
+- `src/core/storage/StateManager.ts`
+  - 초기화 시 cleanup 실행
+  - 활성 프로필 검증 및 자동 활성화
+
+### 세션 상태
+- **상태**: ✅ 완료
+- **완료 시간**: 2025-11-16
+- **다음 세션**: 향후 프로필 기능 확장 시 참고
 
 ## 테스트 계획
 1. VSCode 완전 종료
