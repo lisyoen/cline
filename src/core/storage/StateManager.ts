@@ -494,6 +494,38 @@ export class StateManager {
 	}
 
 	/**
+	 * Get API configuration for Task initialization
+	 *
+	 * ⭐ Profile System: Task 생성 시 이 메서드 사용
+	 * - 프로필이 활성화되어 있으면 프로필 설정 반환
+	 * - 없으면 레거시 설정 반환
+	 * - Task에서만 사용하며, UI나 저장 로직에서는 사용 금지
+	 */
+	getApiConfigurationForTask(): ApiConfiguration {
+		if (!this.isInitialized) {
+			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
+		}
+
+		// Check if profile system is active
+		const profileManager = ProfileManager.get()
+		const mode = this.getGlobalSettingsKey("mode") || "plan"
+		const usePlanMode = mode === "plan"
+
+		try {
+			// Try to get configuration from active profile
+			const profileConfig = profileManager.getActiveProfileAsApiConfiguration(usePlanMode)
+			if (profileConfig) {
+				console.log(`[StateManager] Using profile configuration for Task (mode: ${mode})`)
+				return profileConfig
+			}
+		} catch (error) {
+			// Profile system not available or failed, fall back to legacy
+			console.log("Profile system not available, using legacy API configuration:", error)
+		}
+
+		// Fallback: Construct API configuration from cached component keys (legacy)
+		return this.constructApiConfigurationFromCache()
+	} /**
 	 * Convenience method for setting API configuration
 	 */
 	setApiConfiguration(apiConfiguration: ApiConfiguration): void {

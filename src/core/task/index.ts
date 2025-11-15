@@ -426,7 +426,8 @@ export class Task {
 		}
 
 		// Prepare effective API configuration
-		const apiConfiguration = this.stateManager.getApiConfiguration()
+		// ⭐ Profile System: Use getApiConfigurationForTask() for profile-aware config
+		const apiConfiguration = this.stateManager.getApiConfigurationForTask()
 		const effectiveApiConfiguration: ApiConfiguration = {
 			...apiConfiguration,
 			ulid: this.ulid,
