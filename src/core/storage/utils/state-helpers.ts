@@ -686,6 +686,11 @@ export async function readGlobalStateFromDisk(context: ExtensionContext): Promis
 			openTelemetryLogMaxQueueSize: openTelemetryLogMaxQueueSize ?? 2048,
 			remoteRulesToggles: remoteRulesToggles || {},
 			remoteWorkflowToggles: remoteWorkflowToggles || {},
+
+			// Profile system state (added for multi-profile support)
+			profileSystemState: undefined,
+			activeProfileId: undefined,
+			profileMigrationCompleted: undefined,
 		}
 	} catch (error) {
 		console.error("[StateHelpers] Failed to read global state:", error)

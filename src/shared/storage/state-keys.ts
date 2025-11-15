@@ -7,6 +7,7 @@ import { FocusChainSettings } from "@shared/FocusChainSettings"
 import { HistoryItem } from "@shared/HistoryItem"
 import { McpDisplayMode } from "@shared/McpDisplayMode"
 import { WorkspaceRoot } from "@shared/multi-root/types"
+import { ProfileSystemState } from "@shared/profiles"
 import { GlobalInstructionsFile } from "@shared/remote-config/schema"
 import { Mode, OpenaiReasoningEffort } from "@shared/storage/types"
 import { TelemetrySetting } from "@shared/TelemetrySetting"
@@ -56,6 +57,10 @@ export interface GlobalState {
 	nativeToolCallEnabled: boolean
 	remoteRulesToggles: ClineRulesToggles
 	remoteWorkflowToggles: ClineRulesToggles
+	// Profile system
+	profileSystemState: ProfileSystemState | undefined
+	activeProfileId: string | undefined
+	profileMigrationCompleted: boolean | undefined
 }
 
 export interface Settings {

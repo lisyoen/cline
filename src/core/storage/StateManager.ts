@@ -1,4 +1,5 @@
 import { ApiConfiguration } from "@shared/api"
+import { ShowMessageType } from "@shared/proto/host/window"
 import {
 	GlobalState,
 	GlobalStateAndSettings,
@@ -15,7 +16,6 @@ import {
 import chokidar, { FSWatcher } from "chokidar"
 import type { ExtensionContext } from "vscode"
 import { HostProvider } from "@/hosts/host-provider"
-import { ShowMessageType } from "@/shared/proto/index.host"
 import {
 	getTaskHistoryStateFilePath,
 	readTaskHistoryFromState,
@@ -24,6 +24,7 @@ import {
 	writeTaskSettingsToStorage,
 } from "./disk"
 import { STATE_MANAGER_NOT_INITIALIZED } from "./error-messages"
+import { ProfileManager } from "./ProfileManager"
 import { readGlobalStateFromDisk, readSecretsFromDisk, readWorkspaceStateFromDisk } from "./utils/state-helpers"
 export interface PersistenceErrorEvent {
 	error: Error
@@ -43,6 +44,7 @@ export class StateManager {
 	private workspaceStateCache: LocalState = {} as LocalState
 	private context: ExtensionContext
 	private isInitialized = false
+	private profileManager: ProfileManager | null = null
 
 	// Debounced persistence state
 	private pendingGlobalState = new Set<GlobalStateAndSettingsKey>()
@@ -85,10 +87,38 @@ export class StateManager {
 			// Use populate method to avoid triggering persistence during initialization
 			StateManager.instance.populateCache(globalState, secrets, workspaceState)
 
+			// Mark as initialized BEFORE ProfileManager initialization
+			// This allows migration to use setSecret() and other StateManager methods
+			StateManager.instance.isInitialized = true
+
+			// Initialize ProfileManager
+			try {
+				StateManager.instance.profileManager = ProfileManager.initialize(StateManager.instance)
+			} catch (error) {
+				console.error("[StateManager] Failed to initialize ProfileManager:", error)
+				// ProfileManager 초기화 실패 시에도 계속 진행 (프로필 기능 없이 동작)
+				StateManager.instance.profileManager = null
+			}
+
+			// 프로필 시스템 마이그레이션 (첫 실행 시)
+			if (StateManager.instance.profileManager) {
+				const migrationCompleted = StateManager.instance.globalStateCache["profileMigrationCompleted"]
+				if (!migrationCompleted) {
+					try {
+						console.log("[StateManager] Starting profile system migration...")
+						const currentApiConfig = StateManager.instance.constructApiConfigurationFromCache()
+						await StateManager.instance.profileManager.migrateFromLegacyConfig(currentApiConfig)
+						StateManager.instance.setGlobalState("profileMigrationCompleted", true)
+						console.log("[StateManager] Profile system migration completed successfully")
+					} catch (error) {
+						console.error("[StateManager] Profile system migration failed:", error)
+						// 마이그레이션 실패 시에도 계속 진행 (기존 방식으로 동작)
+					}
+				}
+			}
+
 			// Start watcher for taskHistory.json so external edits update cache (no persist loop)
 			await StateManager.instance.setupTaskHistoryWatcher()
-
-			StateManager.instance.isInitialized = true
 		} catch (error) {
 			console.error("[StateManager] Failed to initialize:", error)
 			throw error
@@ -102,6 +132,30 @@ export class StateManager {
 			throw new Error("StateManager has not been initialized")
 		}
 		return StateManager.instance
+	}
+
+	/**
+	 * Get ProfileManager instance
+	 */
+	public getProfileManager(): ProfileManager {
+		if (!this.profileManager) {
+			throw new Error("ProfileManager has not been initialized")
+		}
+		return this.profileManager
+	}
+
+	/**
+	 * 프로필 시스템이 활성화되었는지 확인 (마이그레이션 완료됨)
+	 */
+	public isProfileSystemActive(): boolean {
+		if (!this.isInitialized || !this.profileManager) {
+			return false
+		}
+		try {
+			return this.getGlobalStateKey("profileMigrationCompleted") === true
+		} catch {
+			return false
+		}
 	}
 
 	/**

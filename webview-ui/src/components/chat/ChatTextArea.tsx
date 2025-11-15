@@ -15,6 +15,7 @@ import { useClickAway, useWindowSize } from "react-use"
 import styled from "styled-components"
 import ContextMenu from "@/components/chat/ContextMenu"
 import { CHAT_CONSTANTS } from "@/components/chat/chat-view/constants"
+import ProfileSelector from "@/components/chat/ProfileSelector"
 import SlashCommandMenu from "@/components/chat/SlashCommandMenu"
 import { CODE_BLOCK_BG_COLOR } from "@/components/common/CodeBlock"
 import Thumbnails from "@/components/common/Thumbnails"
@@ -1648,7 +1649,10 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					<div
 						className="absolute flex items-end bottom-4.5 right-5 z-10 h-8 text-xs"
 						style={{ height: textAreaBaseHeight }}>
-						<div className="flex flex-row items-center">
+						<div className="flex flex-row items-center gap-2">
+							{/* Profile Selector */}
+							<ProfileSelector disabled={sendingDisabled} />
+
 							{dictationSettings?.dictationEnabled === true && dictationSettings?.featureEnabled && (
 								<VoiceRecorder
 									disabled={sendingDisabled}

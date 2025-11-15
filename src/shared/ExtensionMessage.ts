@@ -101,6 +101,10 @@ export interface ExtensionState {
 	remoteConfigSettings?: Partial<RemoteConfigFields>
 	subagentsEnabled?: boolean
 	nativeToolCallSetting?: ClineFeatureSetting
+	// Profile system
+	profiles?: Array<{ id: string; name: string; description?: string; isDefault: boolean }>
+	activeProfileId?: string
+	profileSystemActive?: boolean
 }
 
 export interface ClineMessage {

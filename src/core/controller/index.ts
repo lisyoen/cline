@@ -989,6 +989,38 @@ export class Controller {
 				user: this.stateManager.getGlobalStateKey("nativeToolCallEnabled"),
 				featureFlag: featureFlagsService.getNativeToolCallEnabled(),
 			},
+			// Profile system
+			profiles: (() => {
+				try {
+					if (!this.stateManager.isProfileSystemActive()) {
+						return undefined
+					}
+					return this.stateManager
+						.getProfileManager()
+						.getAllProfiles()
+						.map((p) => ({
+							id: p.metadata.id,
+							name: p.metadata.name,
+							description: p.metadata.description,
+							isDefault: p.metadata.isDefault,
+						}))
+				} catch (error) {
+					console.error("[Controller] Failed to get profiles:", error)
+					return undefined
+				}
+			})(),
+			activeProfileId: (() => {
+				try {
+					if (!this.stateManager.isProfileSystemActive()) {
+						return undefined
+					}
+					return this.stateManager.getProfileManager().getActiveProfileId() || undefined
+				} catch (error) {
+					console.error("[Controller] Failed to get active profile ID:", error)
+					return undefined
+				}
+			})(),
+			profileSystemActive: this.stateManager.isProfileSystemActive(),
 		}
 	}
 
