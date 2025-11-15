@@ -557,8 +557,10 @@ export class ProfileManager {
 		for (const [key, value] of Object.entries(apiConfig)) {
 			if (key.startsWith(prefix) && value !== undefined) {
 				// planModeApiProvider -> apiProvider
+				// planModeOllamaModelId -> ollamaModelId
 				const fieldName = key.replace(prefix, "").replace(/^./, (c) => c.toLowerCase())
 				config[fieldName] = value
+				console.log(`[ProfileManager] Migration: ${key} -> ${mode}.${fieldName} = ${value}`)
 			}
 		}
 
@@ -716,10 +718,15 @@ export class ProfileManager {
 			apiConfig.planModeApiProvider = profile.configuration.planMode.apiProvider
 			apiConfig.planModeApiModelId = profile.configuration.planMode.apiModelId
 
+			console.log(
+				`[ProfileManager] Plan Mode: provider=${profile.configuration.planMode.apiProvider}, modelId=${profile.configuration.planMode.apiModelId}, ollamaModelId=${profile.configuration.planMode.ollamaModelId}`,
+			)
+
 			// ⭐ Provider별 modelId 매핑 (각 handler가 자신의 전용 키를 요구)
 			const planProvider = profile.configuration.planMode.apiProvider
 			if (planProvider === "ollama" && profile.configuration.planMode.ollamaModelId) {
 				apiConfig.planModeOllamaModelId = profile.configuration.planMode.ollamaModelId
+				console.log(`[ProfileManager] Set planModeOllamaModelId: ${apiConfig.planModeOllamaModelId}`)
 			} else if (planProvider === "openrouter" && profile.configuration.planMode.openRouterModelId) {
 				apiConfig.planModeOpenRouterModelId = profile.configuration.planMode.openRouterModelId
 				apiConfig.planModeOpenRouterModelInfo = profile.configuration.planMode.openRouterModelInfo
@@ -775,8 +782,19 @@ export class ProfileManager {
 	public getActiveProfileAsApiConfiguration(usePlanMode: boolean): ApiConfiguration | null {
 		const activeProfileId = this.getActiveProfileId()
 		if (!activeProfileId) {
+			console.log("[ProfileManager] No active profile found")
 			return null
 		}
-		return this.convertToApiConfiguration(activeProfileId, usePlanMode)
+		console.log(
+			`[ProfileManager] Converting active profile ${activeProfileId} to ApiConfiguration (usePlanMode: ${usePlanMode})`,
+		)
+		const apiConfig = this.convertToApiConfiguration(activeProfileId, usePlanMode)
+		console.log("[ProfileManager] Converted API config:", {
+			planModeApiProvider: apiConfig.planModeApiProvider,
+			actModeApiProvider: apiConfig.actModeApiProvider,
+			planModeOllamaModelId: (apiConfig as any).planModeOllamaModelId,
+			actModeOllamaModelId: (apiConfig as any).actModeOllamaModelId,
+		})
+		return apiConfig
 	}
 }
