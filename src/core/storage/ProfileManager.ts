@@ -561,6 +561,9 @@ export class ProfileManager {
 	/**
 	 * 중복된 Default 프로필 정리 (디버깅/마이그레이션 문제 해결용)
 	 * 가장 최근 것 하나만 남기고 나머지 삭제
+	 *
+	 * ⚠️ 경고: 이 메서드가 실행되면 안 됩니다!
+	 * migrateFromLegacyConfig()의 중복 방지 로직이 제대로 작동하지 않았음을 의미합니다.
 	 */
 	public cleanupDuplicateDefaultProfiles(): void {
 		const profiles = this.getAllProfiles()
@@ -571,7 +574,10 @@ export class ProfileManager {
 			return
 		}
 
-		console.log(`[Profile] Found ${defaultProfiles.length} Default profiles, cleaning up...`)
+		// ⚠️ 중복 발견 시 경고
+		console.warn("⚠️ [Profile] WARNING: Duplicate Default profiles detected!")
+		console.warn(`⚠️ [Profile] This should not happen if migrateFromLegacyConfig() is working correctly.`)
+		console.warn(`⚠️ [Profile] Found ${defaultProfiles.length} Default profiles, cleaning up...`)
 
 		// 가장 최근 것 찾기 (updatedAt 기준)
 		const sortedByDate = [...defaultProfiles].sort(
