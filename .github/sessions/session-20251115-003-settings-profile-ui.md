@@ -14,8 +14,14 @@ LLM 다중 설정 기능의 Settings 프로필 관리 UI 구현 (Phase 4)
 1. Settings에 프로필 관리 탭 추가
 2. 프로필 목록 표시 및 관리
 3. 프로필 추가/수정/삭제 기능
-4. 프로필별 상세 설정 UI
-5. OpenAI Compatible 다중 모델 관리 UI
+4. **프로필별 전체 API 설정 UI** (모든 40+ Provider 지원)
+5. Plan/Act Mode 별도 설정 지원
+
+**설계 결정** ⭐:
+- **전체 Provider 프로필 시스템** 채택
+- 이유: 더 높은 기여도, 완전한 기능, 더 큰 사용자 가치
+- 범위: Anthropic, OpenAI, OpenRouter, OpenAI Compatible 등 40+ Provider 모두
+- 각 프로필은 완전한 ApiConfiguration 저장
 
 **이전 작업 요약**:
 - ✅ Phase 1: 시스템 분석 완료
@@ -25,15 +31,19 @@ LLM 다중 설정 기능의 Settings 프로필 관리 UI 구현 (Phase 4)
 
 ## 작업 계획
 1. ✅ 새 세션 생성
-2. ⬜ Settings UI 구조 분석
-3. ⬜ 프로필 관리 탭 추가
-4. ⬜ 프로필 목록 컴포넌트 구현
+2. ✅ Settings UI 구조 분석
+3. ✅ 프로필 관리 탭 추가
+4. ✅ 프로필 목록 컴포넌트 구현
 5. ⬜ 프로필 추가/수정 모달 구현
-6. ⬜ 프로필 삭제 기능 구현
-7. ⬜ 프로필별 상세 설정 UI
-8. ⬜ OpenAI Compatible 다중 모델 UI
-9. ⬜ 테스트 및 검증
-10. ⬜ GitHub 동기화
+6. ⬜ 프로필 삭제 확인 모달 구현
+7. ⬜ **프로필 상세 설정 UI** (전체 Provider)
+   - API Provider 선택 드롭다운
+   - Provider별 설정 필드 동적 표시
+   - Plan/Act Mode 별도 설정
+8. ⬜ 프로필 Import/Export/Duplicate 기능
+9. ⬜ gRPC 서비스 연동
+10. ⬜ 테스트 및 검증
+11. ⬜ GitHub 동기화
 
 ## 진행 상황
 
@@ -182,8 +192,113 @@ interface Profile {
 - ✅ Import/Export/Duplicate 버튼 표시
 - ✅ 선택 상태 표시 정상
 
+### 4. ProfileModal 생성 및 통합 - 2025-11-15 ✅
+
+#### ProfileModal.tsx 생성 (128 lines)
+**위치**: `webview-ui/src/components/settings/ProfileModal.tsx`
+
+**주요 기능**:
+1. **Create/Edit 모드 지원**
+   - mode prop: "create" | "edit"
+   - Edit 모드는 기존 프로필 이름/설명 로드
+
+2. **폼 검증**
+   - 이름 필수 (required)
+   - 길이 제한: 2-50자
+   - 실시간 검증 메시지
+
+3. **키보드 단축키**
+   - Enter: 저장
+   - Escape: 취소
+
+4. **AlertDialog 기반 UI**
+   - AlertDialog 컴포넌트 사용
+   - 2개 텍스트 필드: name, description
+   - 푸터: Cancel, Save 버튼
+
+**Props 인터페이스**:
+```typescript
+interface ProfileModalProps {
+  open: boolean
+  mode: "create" | "edit"
+  profileName?: string
+  profileDescription?: string
+  onOpenChange: (open: boolean) => void
+  onSave: (name: string, description: string) => void
+}
+```
+
+#### ProfilesSection 모달 통합
+**변경 사항**:
+1. **ProfileModal import 추가** (named export)
+2. **모달 상태 추가**
+   ```typescript
+   const [modalOpen, setModalOpen] = useState(false)
+   const [modalMode, setModalMode] = useState<"create" | "edit">("create")
+   const [editingProfile, setEditingProfile] = useState<EditingProfile | null>(null)
+   ```
+
+3. **핸들러 구현**
+   - `handleCreateProfile()`: New Profile 버튼 클릭
+   - `handleEditProfile(profile)`: Edit 아이콘 버튼 클릭
+   - `handleSaveProfile(name, description)`: 저장 처리 (TODO: gRPC)
+
+4. **버튼 연결**
+   - New Profile 버튼 → `onClick={handleCreateProfile}`
+   - Edit 아이콘 버튼 → `onClick={() => handleEditProfile(profile)}`
+   - Create First Profile 버튼 → `onClick={handleCreateProfile}`
+
+5. **ProfileModal JSX 추가**
+   ```tsx
+   <ProfileModal
+     open={modalOpen}
+     mode={modalMode}
+     profileName={editingProfile?.name}
+     profileDescription={editingProfile?.description}
+     onOpenChange={setModalOpen}
+     onSave={handleSaveProfile}
+   />
+   ```
+
+#### 커밋 정보
+- **커밋 해시**: de77bbe4
+- **메시지**: "feat: ProfileModal 생성 및 ProfilesSection 연동"
+- **변경 파일**: ProfileModal.tsx (생성), ProfilesSection.tsx (수정)
+- **상태**: ✅ GitHub에 푸시 완료
+
+#### 완료 항목
+- ✅ ProfileModal 컴포넌트 생성
+- ✅ 폼 검증 로직 구현
+- ✅ 키보드 단축키 구현
+- ✅ ProfilesSection 모달 통합
+- ✅ 모달 상태 관리
+- ✅ 핸들러 함수 구현
+- ✅ 버튼 이벤트 연결
+- ✅ TypeScript 에러 없음
+- ✅ Git 커밋 및 푸시
+
+#### 미완료 항목 (다음 단계)
+- ⬜ ProfileManager gRPC 연동
+- ⬜ 프로필 삭제 확인 모달
+- ⬜ **프로필 상세 설정 UI** (40+ Provider)
+- ⬜ Import/Export/Duplicate 기능
+
 ### 다음 단계
-프로필 추가/수정 모달 구현
+1. **프로필 CRUD gRPC 연동** (우선순위: 높음)
+   - handleSaveProfile에서 ProfileManager.createProfile/updateProfile 호출
+   - 성공 시 UI 업데이트
+   - 에러 처리
+
+2. **프로필 삭제 기능** (우선순위: 높음)
+   - 삭제 확인 AlertDialog 구현
+   - Delete 아이콘 버튼 연결
+   - ProfileManager.deleteProfile() 호출
+
+3. **프로필 상세 설정 UI** (우선순위: 최우선, 복잡도: 높음)
+   - API Provider 선택 드롭다운
+   - Provider별 동적 폼 필드
+   - Plan/Act Mode 별도 설정
+   - ApiOptions 컴포넌트 재사용
 
 **테스트 방법**:
 1. F5 또는 Run → Start Debugging
