@@ -455,13 +455,33 @@ export class StateManager {
 	/**
 	 * Convenience method for getting API configuration
 	 * Ensures cache is initialized if not already done
+	 *
+	 * ⭐ Profile System Integration:
+	 * - 프로필 시스템이 활성화된 경우, 활성 프로필의 설정 사용
+	 * - 프로필 시스템이 비활성화되거나 프로필이 없으면 레거시 설정 사용
 	 */
 	getApiConfiguration(): ApiConfiguration {
 		if (!this.isInitialized) {
 			throw new Error(STATE_MANAGER_NOT_INITIALIZED)
 		}
 
-		// Construct API configuration from cached component keys
+		// Check if profile system is active
+		const profileManager = ProfileManager.get()
+		const mode = this.getGlobalSettingsKey("mode") || "plan"
+		const usePlanMode = mode === "plan"
+
+		try {
+			// Try to get configuration from active profile
+			const profileConfig = profileManager.getActiveProfileAsApiConfiguration(usePlanMode)
+			if (profileConfig) {
+				return profileConfig
+			}
+		} catch (error) {
+			// Profile system not available or failed, fall back to legacy
+			console.log("Profile system not available, using legacy API configuration:", error)
+		}
+
+		// Fallback: Construct API configuration from cached component keys (legacy)
 		return this.constructApiConfigurationFromCache()
 	}
 

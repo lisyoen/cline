@@ -536,6 +536,80 @@ interface ProfileModalProps {
 - ✅ Save 버튼 비활성화 (Coming Soon)
 - ✅ TypeScript 컴파일 에러 없음
 
+### 8. 활성 프로필의 API 설정 적용 구현 - 2025-11-15 ✅
+
+#### StateManager.getApiConfiguration() 수정
+**변경사항**:
+1. **프로필 시스템 통합**
+   - ProfileManager.getActiveProfileAsApiConfiguration() 호출
+   - 현재 모드 (Plan/Act) 기반 설정 로드
+   - 활성 프로필이 있으면 프로필 설정 사용
+
+2. **폴백 메커니즘**
+   - 프로필 시스템이 비활성화되거나 실패 시
+   - 레거시 API 설정으로 자동 폴백
+   - 기존 사용자에게 영향 없음
+
+3. **구현 코드**:
+   ```typescript
+   getApiConfiguration(): ApiConfiguration {
+       if (!this.isInitialized) {
+           throw new Error(STATE_MANAGER_NOT_INITIALIZED)
+       }
+
+       // Check if profile system is active
+       const profileManager = ProfileManager.get()
+       const mode = this.getGlobalSettingsKey("mode") || "plan"
+       const usePlanMode = mode === "plan"
+
+       try {
+           // Try to get configuration from active profile
+           const profileConfig = profileManager.getActiveProfileAsApiConfiguration(usePlanMode)
+           if (profileConfig) {
+               return profileConfig
+           }
+       } catch (error) {
+           // Profile system not available or failed, fall back to legacy
+           console.log("Profile system not available, using legacy API configuration:", error)
+       }
+
+       // Fallback: Construct API configuration from cached component keys (legacy)
+       return this.constructApiConfigurationFromCache()
+   }
+   ```
+
+#### 작동 방식
+**프로필 활성화 시**:
+1. 사용자가 프로필 Activate 버튼 클릭
+2. ProfileManager.switchProfile() 호출
+3. StateManager.postStateToWebview() 자동 호출
+4. 다음 API 호출 시 getApiConfiguration() 실행
+5. 활성 프로필의 설정 반환
+6. API Handler가 프로필 설정으로 LLM 호출
+
+**프로필 비활성화 시**:
+- 기존 API Configuration 탭 설정 사용 (레거시)
+
+#### 커밋 정보
+- **파일**: StateManager.ts (수정)
+- **상태**: ✅ 타입 에러 없음
+
+#### 완료 항목
+- ✅ StateManager.getApiConfiguration() 프로필 통합
+- ✅ 모드별 (Plan/Act) 설정 자동 선택
+- ✅ 레거시 폴백 메커니즘
+- ✅ TypeScript 컴파일 에러 없음
+
+#### 테스트 방법
+1. Extension Development Host 실행 (F5)
+2. 프로젝트 폴더 열기 (예: d:\git\blog)
+3. Settings → Profiles 탭
+4. 새 프로필 생성
+5. Configure API 버튼 클릭 (임시로 전역 설정 표시)
+6. Activate 버튼 클릭
+7. Cline에서 메시지 전송
+8. → 활성 프로필의 API 설정 사용됨!
+
 ### 다음 단계
 1. **프로필 상세 설정 UI 구현** (진행 중 🚧)
    - ✅ profiles.ts에 확장 포인트 문서화
