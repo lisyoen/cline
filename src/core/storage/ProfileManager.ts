@@ -715,10 +715,47 @@ export class ProfileManager {
 		if (profile.configuration.planMode?.apiProvider) {
 			apiConfig.planModeApiProvider = profile.configuration.planMode.apiProvider
 			apiConfig.planModeApiModelId = profile.configuration.planMode.apiModelId
+
+			// ⭐ Provider별 modelId 매핑 (각 handler가 자신의 전용 키를 요구)
+			const planProvider = profile.configuration.planMode.apiProvider
+			if (planProvider === "ollama" && profile.configuration.planMode.ollamaModelId) {
+				apiConfig.planModeOllamaModelId = profile.configuration.planMode.ollamaModelId
+			} else if (planProvider === "openrouter" && profile.configuration.planMode.openRouterModelId) {
+				apiConfig.planModeOpenRouterModelId = profile.configuration.planMode.openRouterModelId
+				apiConfig.planModeOpenRouterModelInfo = profile.configuration.planMode.openRouterModelInfo
+			} else if (planProvider === "openai" && profile.configuration.planMode.openAiModelId) {
+				apiConfig.planModeOpenAiModelId = profile.configuration.planMode.openAiModelId
+				apiConfig.planModeOpenAiModelInfo = profile.configuration.planMode.openAiModelInfo
+			} else if (planProvider === "lmstudio" && profile.configuration.planMode.lmStudioModelId) {
+				apiConfig.planModeLmStudioModelId = profile.configuration.planMode.lmStudioModelId
+			} else if (planProvider === "litellm" && profile.configuration.planMode.liteLlmModelId) {
+				apiConfig.planModeLiteLlmModelId = profile.configuration.planMode.liteLlmModelId
+				apiConfig.planModeLiteLlmModelInfo = profile.configuration.planMode.liteLlmModelInfo
+			}
+			// 필요시 다른 provider 추가...
 		}
+
 		if (profile.configuration.actMode?.apiProvider) {
 			apiConfig.actModeApiProvider = profile.configuration.actMode.apiProvider
 			apiConfig.actModeApiModelId = profile.configuration.actMode.apiModelId
+
+			// ⭐ Provider별 modelId 매핑 (Act Mode)
+			const actProvider = profile.configuration.actMode.apiProvider
+			if (actProvider === "ollama" && profile.configuration.actMode.ollamaModelId) {
+				apiConfig.actModeOllamaModelId = profile.configuration.actMode.ollamaModelId
+			} else if (actProvider === "openrouter" && profile.configuration.actMode.openRouterModelId) {
+				apiConfig.actModeOpenRouterModelId = profile.configuration.actMode.openRouterModelId
+				apiConfig.actModeOpenRouterModelInfo = profile.configuration.actMode.openRouterModelInfo
+			} else if (actProvider === "openai" && profile.configuration.actMode.openAiModelId) {
+				apiConfig.actModeOpenAiModelId = profile.configuration.actMode.openAiModelId
+				apiConfig.actModeOpenAiModelInfo = profile.configuration.actMode.openAiModelInfo
+			} else if (actProvider === "lmstudio" && profile.configuration.actMode.lmStudioModelId) {
+				apiConfig.actModeLmStudioModelId = profile.configuration.actMode.lmStudioModelId
+			} else if (actProvider === "litellm" && profile.configuration.actMode.liteLlmModelId) {
+				apiConfig.actModeLiteLlmModelId = profile.configuration.actMode.liteLlmModelId
+				apiConfig.actModeLiteLlmModelInfo = profile.configuration.actMode.liteLlmModelInfo
+			}
+			// 필요시 다른 provider 추가...
 		}
 
 		// Legacy 호환성: apiProvider와 apiModelId도 설정 (일부 코드가 이것을 참조)
