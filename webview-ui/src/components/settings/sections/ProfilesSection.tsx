@@ -83,13 +83,9 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 					})
 				}
 			} catch (error) {
-				console.error("Failed to save profile:", error)
-
-				// 사용자에게 에러 메시지 표시
+				// 사용자에게 에러 메시지 표시 (console.error 제거 - UI Alert로 충분)
 				const message = error instanceof Error ? error.message : "Failed to save profile"
-				setErrorMessage(message)
-
-				// 3초 후 자동으로 에러 메시지 제거
+				setErrorMessage(message) // 3초 후 자동으로 에러 메시지 제거
 				setTimeout(() => setErrorMessage(null), 3000)
 			}
 		},
