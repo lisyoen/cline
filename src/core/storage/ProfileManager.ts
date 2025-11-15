@@ -589,6 +589,10 @@ export class ProfileManager {
 		console.log(`[Profile] Keeping profile: ${keepProfile.metadata.id}`)
 		console.log(`[Profile] Deleting ${deleteProfiles.length} duplicate profiles`)
 
+		// 활성 프로필 확인
+		const activeProfileId = this.getActiveProfileId()
+		const isActiveBeingDeleted = deleteProfiles.some((p) => p.metadata.id === activeProfileId)
+
 		// 상태 가져오기
 		const state = this.getProfileSystemState()
 		if (!state) {
@@ -606,6 +610,12 @@ export class ProfileManager {
 		const keepIndex = state.profiles.findIndex((p) => p.metadata.id === keepProfile.metadata.id)
 		if (keepIndex >= 0) {
 			state.profiles[keepIndex].metadata.isDefault = true
+		}
+
+		// 활성 프로필이 삭제되었다면 keepProfile로 전환
+		if (isActiveBeingDeleted) {
+			console.warn(`⚠️ [Profile] Active profile was deleted, switching to: ${keepProfile.metadata.id}`)
+			state.activeProfileId = keepProfile.metadata.id
 		}
 
 		// 저장
