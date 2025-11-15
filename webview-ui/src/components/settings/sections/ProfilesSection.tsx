@@ -2,15 +2,54 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { Plus, Settings2, Star, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { ProfileModal } from "../ProfileModal"
 import Section from "../Section"
 
 interface ProfilesSectionProps {
 	renderSectionHeader?: (tabId: string) => JSX.Element | null
 }
 
+interface EditingProfile {
+	id: string
+	name: string
+	description?: string
+}
+
 const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 	const { profiles, activeProfileId, profileSystemActive } = useExtensionState()
 	const [selectedProfileId, setSelectedProfileId] = useState<string | null>(activeProfileId || null)
+
+	// 모달 상태
+	const [modalOpen, setModalOpen] = useState(false)
+	const [modalMode, setModalMode] = useState<"create" | "edit">("create")
+	const [editingProfile, setEditingProfile] = useState<EditingProfile | null>(null)
+
+	// 프로필 생성 핸들러
+	const handleCreateProfile = () => {
+		setModalMode("create")
+		setEditingProfile(null)
+		setModalOpen(true)
+	}
+
+	// 프로필 편집 핸들러
+	const handleEditProfile = (profile: { id: string; name: string; description?: string }) => {
+		setModalMode("edit")
+		setEditingProfile(profile)
+		setModalOpen(true)
+	}
+
+	// 프로필 저장 핸들러
+	const handleSaveProfile = (name: string, description: string) => {
+		// TODO: ProfileManager API 호출 (gRPC)
+		if (modalMode === "create") {
+			console.log("Create profile:", { name, description })
+			// ProfileManager.createProfile({ name, description, configuration: {...} })
+		} else if (editingProfile) {
+			console.log("Update profile:", { id: editingProfile.id, name, description })
+			// ProfileManager.updateProfile(editingProfile.id, { name, description })
+		}
+		setModalOpen(false)
+	}
 
 	// 프로필 시스템이 비활성화된 경우
 	if (!profileSystemActive || !profiles || profiles.length === 0) {
@@ -22,7 +61,7 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 						<Settings2 className="w-12 h-12 mb-4 opacity-50" />
 						<h3 className="text-lg mb-2">No Profiles Available</h3>
 						<p className="text-sm opacity-70 mb-4">Profile system is not active or no profiles exist.</p>
-						<VSCodeButton>
+						<VSCodeButton onClick={handleCreateProfile}>
 							<Plus className="w-4 h-4 mr-2" />
 							Create First Profile
 						</VSCodeButton>
@@ -44,7 +83,7 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 							settings.
 						</p>
 					</div>
-					<VSCodeButton>
+					<VSCodeButton onClick={handleCreateProfile}>
 						<Plus className="w-4 h-4 mr-2" />
 						New Profile
 					</VSCodeButton>
@@ -82,7 +121,10 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 										)}
 									</div>
 									<div className="flex items-center gap-1">
-										<VSCodeButton appearance="icon" aria-label="Edit profile">
+										<VSCodeButton
+											appearance="icon"
+											aria-label="Edit profile"
+											onClick={() => handleEditProfile(profile)}>
 											<Settings2 className="w-4 h-4" />
 										</VSCodeButton>
 										{!profile.isDefault && (
@@ -122,6 +164,16 @@ const ProfilesSection = ({ renderSectionHeader }: ProfilesSectionProps) => {
 					</div>
 				</div>
 			</Section>
+
+			{/* Profile Modal */}
+			<ProfileModal
+				mode={modalMode}
+				onOpenChange={setModalOpen}
+				onSave={handleSaveProfile}
+				open={modalOpen}
+				profileDescription={editingProfile?.description}
+				profileName={editingProfile?.name}
+			/>
 		</div>
 	)
 }
