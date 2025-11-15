@@ -710,6 +710,23 @@ export class ProfileManager {
 			}
 		}
 
+		// ⭐ CRITICAL: planModeApiProvider 및 actModeApiProvider 설정
+		// Task가 현재 모드에 맞는 provider를 사용하도록 설정
+		if (usePlanMode && profile.configuration.planMode?.apiProvider) {
+			apiConfig.planModeApiProvider = profile.configuration.planMode.apiProvider
+			apiConfig.planModeApiModelId = profile.configuration.planMode.apiModelId
+		}
+		if (!usePlanMode && profile.configuration.actMode?.apiProvider) {
+			apiConfig.actModeApiProvider = profile.configuration.actMode.apiProvider
+			apiConfig.actModeApiModelId = profile.configuration.actMode.apiModelId
+		}
+
+		// Legacy 호환성: apiProvider와 apiModelId도 설정 (일부 코드가 이것을 참조)
+		if (modeConfig?.apiProvider) {
+			apiConfig.apiProvider = modeConfig.apiProvider
+			apiConfig.apiModelId = modeConfig.apiModelId
+		}
+
 		return apiConfig as ApiConfiguration
 	}
 
