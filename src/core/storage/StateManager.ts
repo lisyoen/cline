@@ -116,6 +116,18 @@ export class StateManager {
 					}
 				} else {
 					console.log("[Profile] Profile migration already completed, checking active profile...")
+
+					// 중복된 Default 프로필 정리 (첫 실행 시 한 번만)
+					const cleanupCompleted = StateManager.instance.globalStateCache["profileCleanupCompleted"]
+					if (!cleanupCompleted) {
+						try {
+							StateManager.instance.profileManager.cleanupDuplicateDefaultProfiles()
+							StateManager.instance.setGlobalState("profileCleanupCompleted", true)
+						} catch (error) {
+							console.error("[Profile] Cleanup failed:", error)
+						}
+					}
+
 					const activeProfileId = StateManager.instance.profileManager.getActiveProfileId()
 					if (activeProfileId) {
 						const profile = StateManager.instance.profileManager.getProfile(activeProfileId)
