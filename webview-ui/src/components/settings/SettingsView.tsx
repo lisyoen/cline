@@ -9,6 +9,7 @@ import {
 	SlidersHorizontal,
 	SquareMousePointer,
 	SquareTerminal,
+	Users,
 	Wrench,
 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -26,6 +27,7 @@ import BrowserSettingsSection from "./sections/BrowserSettingsSection"
 import DebugSection from "./sections/DebugSection"
 import FeatureSettingsSection from "./sections/FeatureSettingsSection"
 import GeneralSettingsSection from "./sections/GeneralSettingsSection"
+import ProfilesSection from "./sections/ProfilesSection"
 import TerminalSettingsSection from "./sections/TerminalSettingsSection"
 
 const IS_DEV = process.env.IS_DEV
@@ -47,6 +49,13 @@ export const SETTINGS_TABS: SettingsTab[] = [
 		tooltipText: "API Configuration",
 		headerText: "API Configuration",
 		icon: SlidersHorizontal,
+	},
+	{
+		id: "profiles",
+		name: "Profiles",
+		tooltipText: "Profile Management",
+		headerText: "Profile Management",
+		icon: Users,
 	},
 	{
 		id: "features",
@@ -121,6 +130,7 @@ const SettingsView = ({ onDone, targetSection }: SettingsViewProps) => {
 	const TAB_CONTENT_MAP = useMemo(
 		() => ({
 			"api-config": ApiConfigurationSection,
+			profiles: ProfilesSection,
 			general: GeneralSettingsSection,
 			features: FeatureSettingsSection,
 			browser: BrowserSettingsSection,
