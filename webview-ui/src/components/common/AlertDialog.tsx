@@ -1,6 +1,6 @@
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
 import { AlertTriangle } from "lucide-react"
-import React, { ReactNode } from "react"
+import React, { ReactNode, useEffect } from "react"
 import { OPENROUTER_MODEL_PICKER_Z_INDEX } from "../settings/OpenRouterModelPicker"
 
 interface AlertDialogProps {
@@ -10,6 +10,22 @@ interface AlertDialogProps {
 }
 
 export function AlertDialog({ open, onOpenChange, children }: AlertDialogProps) {
+	// Escape 키로 모달 닫기
+	useEffect(() => {
+		if (!open) {
+			return
+		}
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				onOpenChange(false)
+			}
+		}
+
+		document.addEventListener("keydown", handleKeyDown)
+		return () => document.removeEventListener("keydown", handleKeyDown)
+	}, [open, onOpenChange])
+
 	if (!open) {
 		return null
 	}
