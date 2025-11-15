@@ -107,12 +107,36 @@ export class StateManager {
 					try {
 						console.log("[StateManager] Starting profile system migration...")
 						const currentApiConfig = StateManager.instance.constructApiConfigurationFromCache()
-						await StateManager.instance.profileManager.migrateFromLegacyConfig(currentApiConfig)
+						console.log("[StateManager] Current API config keys:", Object.keys(currentApiConfig))
+						console.log("[StateManager] planModeApiProvider:", currentApiConfig.planModeApiProvider)
+						console.log("[StateManager] planModeOllamaModelId:", (currentApiConfig as any).planModeOllamaModelId)
+
+						const migratedProfile =
+							await StateManager.instance.profileManager.migrateFromLegacyConfig(currentApiConfig)
+						console.log("[StateManager] Migrated profile:", {
+							id: migratedProfile.metadata.id,
+							name: migratedProfile.metadata.name,
+							planMode: migratedProfile.configuration.planMode,
+						})
+
 						StateManager.instance.setGlobalState("profileMigrationCompleted", true)
 						console.log("[StateManager] Profile system migration completed successfully")
 					} catch (error) {
 						console.error("[StateManager] Profile system migration failed:", error)
 						// 마이그레이션 실패 시에도 계속 진행 (기존 방식으로 동작)
+					}
+				} else {
+					console.log("[StateManager] Profile migration already completed, checking active profile...")
+					const activeProfileId = StateManager.instance.profileManager.getActiveProfileId()
+					if (activeProfileId) {
+						const profile = StateManager.instance.profileManager.getProfile(activeProfileId)
+						console.log("[StateManager] Active profile:", {
+							id: profile?.metadata.id,
+							name: profile?.metadata.name,
+							planMode: profile?.configuration.planMode,
+						})
+					} else {
+						console.warn("[StateManager] No active profile found!")
 					}
 				}
 			}
