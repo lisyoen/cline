@@ -92,7 +92,50 @@ VSCode의 `mcp.json`에 다음 MCP 서버들이 등록되어 있습니다:
 ### MCP 서버 자동 설치 및 설정
 필요한 MCP 서버가 없는 경우 자동으로 설치합니다:
 
+<<<<<<< Updated upstream
 1. **디렉토리 존재 확인**
+=======
+이 프로젝트는 VSCode 확장 프로그램으로, 프로젝트 내부 파일은 기본 VSCode 도구를 사용하고,
+**프로젝트 외부 파일 (예: 다른 프로젝트, 설정 파일 등)에만 MCP 도구를 사용합니다.**
+
+1. **파일 읽기**: `mcp_mcp-fileops_read_file`
+   ```
+   Tool: mcp_mcp-fileops_read_file
+   Args: { "path": "파일경로" }
+   ```
+
+2. **파일 쓰기** (생성/덮어쓰기): `mcp_mcp-fileops_write_to_file`
+   - **반드시** 파일을 먼저 VSCode에서 연 후 사용
+   ```
+   Tool: mcp_mcp-fileops_write_to_file
+   Args: { "path": "파일경로", "content": "..." }
+   ```
+
+3. **파일에 추가**: `mcp_mcp-fileops_append_to_file`
+   - **반드시** 파일을 먼저 VSCode에서 연 후 사용
+   ```
+   Tool: mcp_mcp-fileops_append_to_file
+   Args: { "path": "파일경로", "content": "..." }
+   ```
+
+4. **디렉토리 목록**: `mcp_mcp-fileops_list_directory`
+   ```
+   Tool: mcp_mcp-fileops_list_directory
+   Args: { "path": "디렉토리경로" }
+   ```
+
+5. **파일 삭제**: `mcp_mcp-fileops_delete_file`
+   ```
+   Tool: mcp_mcp-fileops_delete_file
+   Args: { "path": "파일경로" }
+   ```
+
+### 파일 생성/쓰기 작업 (프로젝트 외부 파일)
+**프로젝트 외부 파일 (.github/, 설정 파일 등) 생성 및 수정 시:**
+
+**올바른 순서 (필수!):**
+1. **먼저** PowerShell로 파일을 VSCode에서 열기 (파일이 없어도 열림)
+>>>>>>> Stashed changes
    ```powershell
    Test-Path "D:\git\mcp-websearch"
    Test-Path "D:\git\mcp-fileops"
@@ -231,7 +274,63 @@ VSCode의 `mcp.json`에 다음 MCP 서버들이 등록되어 있습니다:
 - XXX: 일자별 순차 번호 (001부터)
 - description: 간단한 작업 설명 (선택적)
 
+<<<<<<< Updated upstream
 **예시**: `session-20251113-001-api-integration`
+=======
+### 분석 작업 시 실시간 기록 규칙 (중요!)
+
+**문제점**: 분석 작업 중 자주 중단되어 진행 상황 손실
+
+**해결책**: 각 단계마다 즉시 세션 파일에 기록
+
+#### 분석 시작 전 준비
+1. `.github/.prompt.txt` 파일 읽기 (분석 워크플로우 규칙)
+2. 세션 파일에 "분석 진행 상황" 섹션 생성
+3. 전체 분석 단계를 체크리스트로 작성
+
+#### 분석 중 즉시 기록 규칙
+**반드시 기록해야 하는 시점**:
+- ✅ 각 분석 단계 시작 시
+- ✅ 파일 1-2개 읽은 후 발견 사항 기록
+- ✅ 중요한 발견이 있을 때마다
+- ✅ 검색 후 결과 요약
+- ✅ 각 단계 완료 시 + 다음 단계 계획
+- ✅ 10-15분마다 진행 상황 요약
+
+**기록 형식**:
+```markdown
+#### [N]단계: [단계명]
+**시작**: YYYY-MM-DD HH:MM
+**목적**: 무엇을 알아내려고 하는가
+
+**세부 작업**:
+- [ ] 작업 1
+- [ ] 작업 2
+
+**탐색한 파일/코드**:
+- `파일경로` - 발견 내용 요약
+
+**발견 사항**:
+1. 핵심 발견 1
+2. 핵심 발견 2
+
+**다음 단계**: 다음에 무엇을 할 것인가
+```
+
+#### 중단 후 재개 프로세스
+1. 세션 파일의 "분석 진행 상황" 섹션 읽기
+2. 체크리스트에서 마지막 완료 단계 확인
+3. "다음 단계" 내용 읽고 이어서 진행
+4. 중단된 단계가 있으면 해당 단계부터 재시작
+
+**핵심**: 분석 중 언제든 중단되어도 이어갈 수 있도록 발견 사항을 즉시 세션 파일에 기록!
+
+### Git 동기화 절차 (중요!)
+**동기화 명령 시 순서**:
+1. **먼저** 모든 세션 파일 상태를 "동기화 완료"로 미리 업데이트
+2. **그 다음** git add, commit, push 실행
+3. 동기화 후 추가 세션 파일 업데이트 금지 (순환 문제 방지)
+>>>>>>> Stashed changes
 
 ---
 
