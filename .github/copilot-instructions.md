@@ -92,50 +92,7 @@ VSCode의 `mcp.json`에 다음 MCP 서버들이 등록되어 있습니다:
 ### MCP 서버 자동 설치 및 설정
 필요한 MCP 서버가 없는 경우 자동으로 설치합니다:
 
-<<<<<<< Updated upstream
 1. **디렉토리 존재 확인**
-=======
-이 프로젝트는 VSCode 확장 프로그램으로, 프로젝트 내부 파일은 기본 VSCode 도구를 사용하고,
-**프로젝트 외부 파일 (예: 다른 프로젝트, 설정 파일 등)에만 MCP 도구를 사용합니다.**
-
-1. **파일 읽기**: `mcp_mcp-fileops_read_file`
-   ```
-   Tool: mcp_mcp-fileops_read_file
-   Args: { "path": "파일경로" }
-   ```
-
-2. **파일 쓰기** (생성/덮어쓰기): `mcp_mcp-fileops_write_to_file`
-   - **반드시** 파일을 먼저 VSCode에서 연 후 사용
-   ```
-   Tool: mcp_mcp-fileops_write_to_file
-   Args: { "path": "파일경로", "content": "..." }
-   ```
-
-3. **파일에 추가**: `mcp_mcp-fileops_append_to_file`
-   - **반드시** 파일을 먼저 VSCode에서 연 후 사용
-   ```
-   Tool: mcp_mcp-fileops_append_to_file
-   Args: { "path": "파일경로", "content": "..." }
-   ```
-
-4. **디렉토리 목록**: `mcp_mcp-fileops_list_directory`
-   ```
-   Tool: mcp_mcp-fileops_list_directory
-   Args: { "path": "디렉토리경로" }
-   ```
-
-5. **파일 삭제**: `mcp_mcp-fileops_delete_file`
-   ```
-   Tool: mcp_mcp-fileops_delete_file
-   Args: { "path": "파일경로" }
-   ```
-
-### 파일 생성/쓰기 작업 (프로젝트 외부 파일)
-**프로젝트 외부 파일 (.github/, 설정 파일 등) 생성 및 수정 시:**
-
-**올바른 순서 (필수!):**
-1. **먼저** PowerShell로 파일을 VSCode에서 열기 (파일이 없어도 열림)
->>>>>>> Stashed changes
    ```powershell
    Test-Path "D:\git\mcp-websearch"
    Test-Path "D:\git\mcp-fileops"
@@ -274,9 +231,8 @@ VSCode의 `mcp.json`에 다음 MCP 서버들이 등록되어 있습니다:
 - XXX: 일자별 순차 번호 (001부터)
 - description: 간단한 작업 설명 (선택적)
 
-<<<<<<< Updated upstream
 **예시**: `session-20251113-001-api-integration`
-=======
+
 ### 분석 작업 시 실시간 기록 규칙 (중요!)
 
 **문제점**: 분석 작업 중 자주 중단되어 진행 상황 손실
@@ -330,7 +286,6 @@ VSCode의 `mcp.json`에 다음 MCP 서버들이 등록되어 있습니다:
 1. **먼저** 모든 세션 파일 상태를 "동기화 완료"로 미리 업데이트
 2. **그 다음** git add, commit, push 실행
 3. 동기화 후 추가 세션 파일 업데이트 금지 (순환 문제 방지)
->>>>>>> Stashed changes
 
 ---
 
