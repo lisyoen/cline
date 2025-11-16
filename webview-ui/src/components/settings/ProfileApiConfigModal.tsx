@@ -162,18 +162,36 @@ export function ProfileApiConfigModal({ open, profileId, profileName, onOpenChan
 								<div className="flex items-start gap-2">
 									<Info className="w-4 h-4 mt-0.5 text-(--vscode-charts-blue)" />
 									<div className="flex-1">
-										<p className="text-sm font-medium m-0 mb-2">Profile Configuration Status</p>
+										<p className="text-sm font-medium m-0 mb-2">Profile Configuration</p>
 										<p className="text-xs text-(--vscode-descriptionForeground) m-0">
-											Profile loaded successfully. Profile-specific API configuration UI is currently under
-											development.
+											Profile: <strong>{profileData.metadata?.name || "Unknown"}</strong>
 										</p>
+										{profileData.metadata?.description && (
+											<p className="text-xs text-(--vscode-descriptionForeground) m-0 mt-1">
+												{profileData.metadata.description}
+											</p>
+										)}
 										<p className="text-xs text-(--vscode-descriptionForeground) m-0 mt-2">
-											<strong>Coming soon:</strong> Configure different API providers and models for each
-											profile's Plan and Act modes.
+											API Configuration:{" "}
+											{profileData.configuration?.apiConfiguration ? "Loaded" : "Not configured"}
 										</p>
 									</div>
 								</div>
 							</div>
+
+							{/* Debug: Show loaded configuration */}
+							{profileData.configuration?.apiConfiguration && (
+								<div className="mb-4">
+									<details className="text-xs">
+										<summary className="cursor-pointer text-(--vscode-descriptionForeground) mb-2">
+											Debug: Show loaded configuration
+										</summary>
+										<pre className="text-xs overflow-auto p-3 bg-(--vscode-textBlockQuote-background) rounded">
+											{JSON.stringify(profileData.configuration.apiConfiguration, null, 2)}
+										</pre>
+									</details>
+								</div>
+							)}
 
 							{/* Temporary: Show current global settings */}
 							<div className="mb-4">
@@ -185,9 +203,11 @@ export function ProfileApiConfigModal({ open, profileId, profileName, onOpenChan
 
 							{/* Future Info */}
 							<div className="text-xs text-(--vscode-descriptionForeground) p-3 bg-(--vscode-textBlockQuote-background) rounded">
+								<strong>Next Step:</strong> Create a ProfileApiOptions component that reads configuration from the
+								loaded profile data instead of global state.
+								<br />
 								<strong>Note:</strong> Once implemented, these settings will only apply to this profile. Each
-								profile will be able to have different API providers, models, and configurations for both Plan and
-								Act modes.
+								profile can have different API providers and models for Plan and Act modes.
 							</div>
 						</>
 					)}

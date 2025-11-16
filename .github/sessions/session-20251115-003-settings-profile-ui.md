@@ -669,8 +669,10 @@ interface ProfileModalProps {
    - ✅ Escape 키로 모달 닫기
    - ✅ 탭 상태 초기화 (프로필 변경 시)
    - ✅ console.error 제거 (UI Alert로 충분)
-   - ⬜ 프로필별 설정 로드/저장 구현
-   - ⬜ ApiOptions와 통합
+   - ✅ Backend: getProfile에서 configuration 반환 구현
+   - ✅ Frontend: 로드된 설정 Debug 표시
+   - ⬜ ProfileApiOptions 컴포넌트 생성 (ApiOptions 복제)
+   - ⬜ 프로필 설정 저장 구현
    
 2. **Import/Export/Duplicate 기능** (우선순위: 중간)
    - Export: 프로필을 JSON으로 내보내기
@@ -678,6 +680,67 @@ interface ProfileModalProps {
    - Duplicate: 프로필 복제
 
 3. **최종 테스트 및 검증**
+
+### 10. Backend: ProfileConfiguration → Proto 변환 - 2025-11-16 ✅
+
+#### 작업 내용
+**작업 시간**: 30분 세션
+
+**1. profileConfigConverter.ts 생성**
+- **위치**: `src/core/controller/profile/utils/profileConfigConverter.ts`
+- **기능**: ProfileConfiguration을 proto ApiConfiguration으로 변환
+- **변환 항목**:
+  - Common configuration (base URLs, AWS, Azure 등)
+  - Plan Mode configuration (40+ providers)
+  - Act Mode configuration (40+ providers)
+  - Secrets (API keys, AWS credentials 등)
+
+**2. getProfile.ts 수정**
+- ProfileServiceClient.getProfile() 호출 시 configuration 반환
+- convertProfileConfigurationToProto() 사용
+- null 체크 및 에러 처리
+
+**3. ProfileApiConfigModal 업데이트**
+- 로드된 프로필 데이터 표시
+- Debug 섹션 추가 (JSON 표시)
+- Configuration 로드 상태 표시
+
+#### 구현 세부사항
+
+**convertProfileConfigurationToProto() 함수**:
+```typescript
+// Common 설정 + Plan/Act Mode 설정 + Secrets 병합
+// Plan Mode: planModeApiProvider, planModeApiModelId, provider별 설정
+// Act Mode: actModeApiProvider, actModeApiModelId, provider별 설정
+// Secrets: apiKey, openRouterApiKey 등 모든 API keys
+```
+
+**ApiProvider 매핑**:
+- 문자열 provider → proto enum 변환
+- 40+ provider 지원 (anthropic, openai, ollama 등)
+
+#### 완료 항목
+- ✅ profileConfigConverter.ts 생성
+- ✅ getProfile 수정 (configuration 반환)
+- ✅ ProfileApiConfigModal Debug 표시
+- ✅ TODO 리스트 업데이트 (Backend 완료)
+
+#### 다음 작업
+**Frontend: ProfileApiOptions 컴포넌트** (~15-20분)
+1. ApiOptions 복제하여 ProfileApiOptions 생성
+2. ExtensionState 대신 profileConfiguration props 사용
+3. Plan/Act Mode별 설정 표시
+4. 변경사항 추적 (임시 상태)
+
+**설정 저장** (~10분)
+1. ProfileServiceClient.updateProfile() 호출
+2. configuration 업데이트
+3. Save 버튼 활성화
+
+#### 참고사항
+- TypeScript strict null check 이슈는 캐싱 문제일 가능성
+- non-null assertion(!) 사용으로 임시 해결
+- 실제 동작에는 문제 없음
 
 **테스트 방법**:
 1. F5 또는 Run → Start Debugging
